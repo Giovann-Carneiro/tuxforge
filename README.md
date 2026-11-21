@@ -24,7 +24,7 @@
 
 Se travar, use **💡 Dica** (custa dinheiro e rebaixa a peça) ou **⟲ Reiniciar** para limpar o nível.
 
-Sem paciência para um nível? **⏭ Pular nível** propõe uma pergunta muito difícil: se acertar, você pula para o próximo nível (as palavras que faltam não rendem dinheiro). Se errar, continua onde está e só pode tentar de novo depois de 60 s.
+Sem paciência para um nível? **⏭ Pular nível** propõe uma pergunta muito difícil: se acertar, você pula para o próximo nível (e ganha uma parte do que as palavras que faltam pagariam: 30% do valor Prata de cada uma). Se errar, continua onde está e só pode tentar de novo depois de 60 s.
 
 ## 🕹️ Modos de jogo
 
@@ -60,8 +60,12 @@ Todas as 16 palavras da atividade estão no jogo, e em cada tabuleiro elas se cr
 | 3 | 4→ | **MEMÓRIA DE MASSA** | Guarda arquivos e programas por longo prazo, como HDs e SSDs, em grande quantidade. |
 | 3 | 5→ | **MICROCONTROLADOR** | Minicomputador em um único chip, com CPU, memória e entradas e saídas, para tarefas específicas. |
 
+## 🎨 Créditos
+
+A logo é uma pixel art de terceiros (um gatinho-espírito, recolorido para roxo), usada aqui apenas neste trabalho acadêmico, sem fins comerciais. Os direitos pertencem ao(à) artista original; se for você e quiser o crédito ou a retirada, é só avisar.
+
 ## 🛠️ Feito com
 
 HTML, CSS e JavaScript puros, sem bibliotecas. Para jogar offline, basta abrir o `index.html` no navegador.
 
-`index.html` · `style.css` · `script.js` (lógica) · `data.js` (palavras, quizzes e peças) · `art.js` (desenhos das peças)
+`index.html` · `style.css` · `script.js` (lógica) · `data.js` (palavras, quizzes e peças) · `art.js` (desenhos das peças) · `img/` (logo)
