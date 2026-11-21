@@ -503,3 +503,90 @@ body::before {
   .game-col, .side-col { gap: 20px; }
   .layout { padding-left: 14px; padding-right: 14px; }
 }
+
+/* =========================================================
+   LAYOUT 2: só a cruzadinha + PC ao lado; loja em janela
+   ========================================================= */
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-logo { display: block; width: 46px; height: 43px; flex: none; }
+.brand-svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 0 8px rgba(255, 91, 214, 0.55)); }
+.lg-eye { transform-box: fill-box; transform-origin: center; animation: catblink 5.5s infinite; }
+@keyframes catblink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.08); } }
+
+.layout { max-width: 1400px; grid-template-columns: minmax(0, 1fr) 360px; padding-top: 24px; }
+.side-col { top: 74px; max-height: calc(100vh - 90px); }
+.pc-shop { width: 100%; margin-top: 12px; }
+
+.shop-btn { border-color: #8a45e6; background: rgba(197, 139, 255, 0.1); white-space: nowrap; }
+.badge {
+  display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; margin-left: 6px;
+  border-radius: 99px; background: #ff5bd6; color: #1c0636; font-size: 0.72rem; font-weight: 800; vertical-align: middle;
+}
+.badge[hidden] { display: none; }
+.btn.glow { border-color: #ff5bd6; animation: btnglow 1.4s ease-in-out infinite; }
+@keyframes btnglow { 50% { box-shadow: 0 0 24px rgba(255, 91, 214, 0.85); } }
+
+/* tela larga: tabuleiro e pistas lado a lado */
+@media (min-width: 1280px) {
+  .game-col { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 22px; align-items: start; }
+  .game-col .hud { grid-column: 1 / -1; }
+  .game-col .board-panel { grid-column: 1; grid-row: 2; }
+  .game-col .clues { grid-column: 2; grid-row: 2; grid-template-columns: 1fr; max-height: 76vh; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #5a2d93 transparent; }
+}
+
+/* ---------- Loja em janela ---------- */
+.modal.shop-modal { width: min(1080px, 100%); padding: 20px 22px 18px; }
+.shop-top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.shop-title { flex: 1; min-width: 0; }
+.shop-sub { margin-top: 4px; font-size: 0.92rem; color: var(--muted); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.shop-msg { color: #ffb3ee; font-weight: 700; }
+.shop-wallet { display: flex; flex-direction: column; align-items: flex-end; padding: 6px 14px; border: 1px solid var(--line); border-radius: 10px; background: rgba(197, 139, 255, 0.08); }
+.shop-wallet span { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+.shop-wallet strong { font-family: var(--font-hd); font-size: 1rem; color: #ffb3ee; text-shadow: 0 0 12px rgba(255, 91, 214, 0.5); }
+.icon-btn {
+  flex: none; width: 38px; height: 38px; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--line); background: rgba(255, 255, 255, 0.04); color: var(--text); font-size: 1rem;
+}
+.icon-btn:hover { border-color: #ff5bd6; background: rgba(255, 91, 214, 0.12); }
+.shop-top { padding-right: 26px; }
+.shop-body { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr); gap: 18px; align-items: start; }
+.shop-left { max-height: 62vh; overflow-y: auto; padding-right: 6px; scrollbar-width: thin; scrollbar-color: #5a2d93 transparent; }
+.shop-left .shop-tabs { position: sticky; top: 0; z-index: 2; padding-bottom: 8px; background: linear-gradient(#150a28 80%, transparent); margin-bottom: 4px; }
+.shop-right { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+.shop-pc {
+  display: flex; justify-content: center; padding: 10px; border: 1px solid var(--line); border-radius: 12px;
+  background: radial-gradient(circle at 50% 30%, rgba(197, 139, 255, 0.16), transparent 70%), #0a0414;
+}
+.shop-pc .pc-svg { width: min(100%, 250px); }
+.shop-rank { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-hd); font-size: 0.78rem; }
+.shop-rank span { color: var(--neon); }
+.shop-modal .part .buy { width: auto; margin-top: 0; }
+.shop-modal .shop-right .btn { margin-top: 0; }
+.shop-modal .tab { width: auto; margin: 0; }
+
+/* ---------- Abertura com a logo ---------- */
+.splash { text-align: center; margin: -4px 0 8px; }
+.splash-logo { width: 116px; height: auto; display: inline-block; filter: drop-shadow(0 0 18px rgba(255, 91, 214, 0.6)); animation: floaty 3.2s ease-in-out infinite; }
+@keyframes floaty { 50% { transform: translateY(-5px); } }
+.splash-title { font-family: var(--font-hd); font-weight: 900; line-height: 1; margin-top: 6px; }
+.splash-title span { display: block; font-size: 0.95rem; letter-spacing: 0.22em; color: #c9a3ff; }
+.splash-title b { display: block; font-size: 2.5rem; color: #05010a; -webkit-text-stroke: 3px #c58bff; paint-order: stroke fill; text-shadow: 0 0 22px rgba(197, 139, 255, 0.7); }
+.splash-sub { margin: 8px 0 2px; font-size: 0.72rem; letter-spacing: 0.28em; text-transform: uppercase; color: #bfa4e6; }
+
+@media (max-width: 1020px) {
+  .side-col { top: auto; }
+}
+@media (max-width: 820px) {
+  .shop-body { grid-template-columns: 1fr; }
+  .shop-right { order: -1; }
+  .shop-pc .pc-svg { width: min(100%, 130px); }
+  .shop-left { max-height: 44vh; }
+}
+@media (max-width: 640px) {
+  .brand-logo { width: 38px; height: 36px; }
+  .top-right { width: 100%; justify-content: space-between; margin-left: 0; }
+  .modal.shop-modal { padding: 16px 14px 14px; }
+  .shop-wallet { display: none; }
+}
+
+.spec .pn { white-space: normal; font-size: 0.74rem; line-height: 1.15; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
