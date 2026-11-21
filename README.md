@@ -26,16 +26,24 @@ Se travar, use **💡 Dica** (custa dinheiro e rebaixa a peça) ou **⟲ Reinici
 
 Sem paciência para um nível? **⏭ Pular nível** propõe uma pergunta muito difícil: se acertar, você pula para o próximo nível (e ganha uma parte do que as palavras que faltam pagariam: 30% do valor Prata de cada uma). Se errar, continua onde está e só pode tentar de novo depois de 60 s.
 
+## ✨ Para continuar jogando
+
+- **🔥 Combo:** cada acerto limpo seguido (sem dica e sem errar no Conferir) aumenta o prêmio em 10%, até +50%.
+- **⭐ Estrelas:** cada nível termina com 1 a 3 estrelas, conforme os erros e as dicas.
+- **🏆 Conquistas:** 10 desafios paralelos, salvos no navegador.
+- **📖 Guia dos termos:** explica cada palavra, mostra os sinais para identificá-la nas pistas e com o que não confundir. Também tem dicas de como atacar a cruzadinha.
+- **🔊 Sons e animações:** efeitos sonoros gerados no navegador (dá para silenciar no botão do canto) e uma tela de carregamento no início.
+
 ## 🕹️ Modos de jogo
 
 - **⭐ Recomendado:** começa fácil e fica mais difícil a cada nível (veja abaixo).
-- **🔥 Tudo no difícil:** os 3 níveis já com as regras mais duras (sem letras de ajuda, dica de R$ 500 e erro de −R$ 500), mas com recompensas 50% maiores.
+- **🔥 Tudo no difícil:** os 3 níveis já com as regras mais duras (sem letras de ajuda, dica de R$ 1000 e erro de −R$ 800), mas com recompensas 50% maiores.
 
 ## 🎚️ Níveis (modo recomendado)
 
-- **1 · Power On (Fácil)**: a primeira letra de cada palavra já vem revelada e errar não custa nada. Dica: R$ 150.
-- **2 · BIOS (Médio)**: tabuleiro vazio, dica de R$ 300 e erro de −R$ 250.
-- **3 · Kernel (Difícil)**: palavras longas, dica de R$ 500 e erro de −R$ 500. É o nível que paga mais.
+- **1 · Power On (Fácil)**: a primeira letra de cada palavra já vem revelada e errar não custa nada. Dica: R$ 300.
+- **2 · BIOS (Médio)**: tabuleiro vazio, dica de R$ 600 e erro de −R$ 400.
+- **3 · Kernel (Difícil)**: palavras longas, dica de R$ 1000 e erro de −R$ 800. É o nível que paga mais.
 
 ## 📚 Palavras e pistas
 
