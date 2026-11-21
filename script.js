@@ -25,11 +25,14 @@ const normalizeLetter = (s) =>
 
 /* ---------- estado ---------- */
 const game = {
+  mode: "recomendado", // "recomendado" (fácil → difícil) ou "dificil" (tudo no difícil)
   levelIndex: 0,
   money: ECONOMY.inicial,
   installed: {}, // slotId -> partId
   solvedTotal: 0,
-  pending: [], // recompensas ainda não gastas: { tier, termo }
+  access: 1, // maior tier de peças liberado na loja (1 Bronze, 2 Prata, 3 Ouro): fica para sempre
+  newUnlock: false, // liberou um tier novo e ainda não abriu a loja
+  shopThen: null, // o que fazer ao fechar a loja (ex.: voltar à tela de fim de nível)
   snapshot: null, // estado no início do nível (usado pelo Reiniciar)
   L: null, // nível em andamento
   shopSlot: "cpu",
@@ -66,12 +69,13 @@ function renderPC() {
     const p = game.installed[sl.id] ? partById[game.installed[sl.id]] : null;
     const flash = game.justInstalled === sl.id ? " flash" : "";
     const thumb = p ? partThumb(sl.id, p.tier) : `<span class="ph">${sl.icone}</span>`;
-    return `<li class="spec ${p ? "t" + p.tier : "empty"}${flash}"><div class="sthumb">${thumb}</div><div class="stext"><span class="sl">${sl.nome}</span><span class="pn">${p ? p.nome : "— vazio —"}</span></div></li>`;
+    return `<li class="spec ${p ? "t" + p.tier : "empty"}${flash}" title="${sl.nome}: ${p ? p.nome : "vazio"}"><div class="sthumb">${thumb}</div><span class="sl">${sl.curto}</span></li>`;
   }).join("");
 }
 
 function updateWallet(bump = false) {
   $("#money").textContent = fmt(game.money);
+  updateShopBadge();
   if (bump) {
     const w = $(".wallet");
     w.classList.remove("bump");
@@ -123,7 +127,7 @@ function toast(msg, bad = false) {
    Nível: montagem do tabuleiro
    ========================================================= */
 function snapshotNow() {
-  return { money: game.money, installed: { ...game.installed }, solvedTotal: game.solvedTotal };
+  return { money: game.money, installed: { ...game.installed }, solvedTotal: game.solvedTotal, access: game.access };
 }
 
 function startLevel(i) {
@@ -132,10 +136,14 @@ function startLevel(i) {
   showLevelIntro();
 }
 
+/* regras do nível conforme o modo escolhido na tela inicial */
+function levelDef(i) {
+  return game.mode === "dificil" ? { ...LEVELS[i], ...HARD } : { ...LEVELS[i] };
+}
+
 function loadLevel(i) {
-  const def = LEVELS[i];
+  const def = levelDef(i);
   game.levelIndex = i;
-  game.pending = [];
   const L = { def, words: [], cells: new Map(), wi: 0, dir: "H", cur: null, lastMark: performance.now(), solvedCount: 0, ended: false };
 
   def.words.forEach((w, idx) => {
@@ -215,11 +223,11 @@ function updateCellSize() {
   const L = game.L;
   if (!L) return;
   const wrap = $("#boardWrap");
-  const bySize = (avail, n) => Math.floor((avail - (n - 1) * 3) / n);
-  const byWidth = bySize(wrap.clientWidth - 20, L.def.cols);
-  // em telas largas, limita também pela altura para o tabuleiro caber sem rolar muito
-  const byHeight = window.innerWidth > 1020 ? bySize(window.innerHeight * 0.62, L.def.rows) : 99;
-  document.documentElement.style.setProperty("--cell", Math.max(26, Math.min(48, byWidth, byHeight)) + "px");
+  const fit = (avail, n) => Math.floor((avail - (n - 1) * 3) / n);
+  const byW = fit(wrap.clientWidth - 24, L.def.cols);
+  // em telas grandes o painel tem altura fixa: as casas também precisam caber na altura
+  const byH = matchMedia("(min-width: 901px)").matches ? fit(wrap.clientHeight - 24, L.def.rows) : 99;
+  document.documentElement.style.setProperty("--cell", Math.max(22, Math.min(60, byW, byH)) + "px");
 }
 
 function renderClues() {
@@ -458,8 +466,9 @@ async function conferir() {
   if (bad.length) toast(penalty ? `Palavra errada! −${fmt(penalty)}` : "Tem palavra errada. Revise as casas em vermelho.", true);
 
   if (ok.length) {
-    for (let i = 0; i < ok.length; i++) await runWordFlow(ok[i], i < ok.length - 1);
-    if (game.pending.length) openShop(true);
+    let goShop = false;
+    for (let i = 0; i < ok.length; i++) goShop = await runWordFlow(ok[i], i < ok.length - 1);
+    if (goShop) openShop(true);
     else { hideModal(true); afterModal(); }
   }
 }
@@ -523,27 +532,44 @@ function restoreSnapshot() {
   game.money = s.money;
   game.installed = { ...s.installed };
   game.solvedTotal = s.solvedTotal;
+  game.access = s.access;
 }
 
 function askNewGame() {
   if (game.paused) return;
   const m = showModal(`
     <div class="modal-tag warn">Atenção</div>
-    <h2>Começar um novo jogo?</h2>
-    <p>Você perde todo o progresso: níveis, dinheiro e peças.</p>
+    <h2>Voltar para o início?</h2>
+    <p>Você perde todo o progresso (níveis, dinheiro e peças) e escolhe o modo de novo.</p>
     <div class="btn-row">
       <button class="btn ghost" id="no" data-autofocus type="button">Cancelar</button>
-      <button class="btn danger" id="yes" type="button">Novo jogo</button>
+      <button class="btn danger" id="yes" type="button">Voltar ao início</button>
     </div>`);
   $("#no", m).addEventListener("click", () => hideModal(false));
-  $("#yes", m).addEventListener("click", newGame);
+  $("#yes", m).addEventListener("click", () => { hideModal(false); showStart(); });
+}
+
+/* ---------- tela inicial: escolha do modo ---------- */
+function showStart() {
+  game.shopOpen = false;
+  $("#start").hidden = false;
+  document.body.classList.add("modal-open");
+  $(".mode.sel").focus();
+}
+
+function beginGame() {
+  game.mode = $(".mode.sel").dataset.mode;
+  $("#start").hidden = true;
+  document.body.classList.remove("modal-open");
+  newGame();
 }
 
 function newGame() {
   game.money = ECONOMY.inicial;
   game.installed = {};
   game.solvedTotal = 0;
-  game.pending = [];
+  game.access = 1;
+  game.newUnlock = false;
   game.shopSlot = "cpu";
   startLevel(0);
 }
@@ -555,8 +581,12 @@ async function runWordFlow(w, hasNext) {
   const def = game.L.def;
   const tier = w.hint ? 1 : w.elapsed <= def.tempoRapido ? 3 : w.elapsed <= def.tempoMedio ? 2 : 1;
   const t = TIERS[tier];
-  const income = ECONOMY.renda[tier];
+  const mult = def.mult || 1;
+  const income = Math.round((ECONOMY.renda[tier] * mult) / 10) * 10;
+  const bonus = Math.round((ECONOMY.bonusQuiz * mult) / 10) * 10;
   addMoney(income);
+  const unlocked = tier > game.access;
+  if (unlocked) { game.access = tier; game.newUnlock = true; updateShopBadge(); }
 
   const why = w.hint ? "usou dica" : `${Math.round(w.elapsed)} s`;
   let m = showModal(`
@@ -564,7 +594,7 @@ async function runWordFlow(w, hasNext) {
     <h2 class="reveal">${w.termo}</h2>
     <div class="tier-banner ${t.classe}">
       <span class="medal">${MEDAL[tier]}</span>
-      <span class="grow"><span class="chip ${t.classe}">${t.nome}</span> ${why} · peças até ${t.nome}</span>
+      <span class="grow"><span class="chip ${t.classe}">${t.nome}</span> ${why}${unlocked ? ` · 🔓 peças ${t.nome} liberadas na loja!` : ""}</span>
       <span class="money">+${fmt(income)}</span>
     </div>
     <p>${w.desc}</p>
@@ -587,30 +617,53 @@ async function runWordFlow(w, hasNext) {
     if (opts[i].right) b.classList.add("right");
     else if (i === chosen) b.classList.add("wrongopt");
   });
-  if (right) addMoney(ECONOMY.bonusQuiz);
+  if (right) addMoney(bonus);
   $("#fb", m).innerHTML = `
-    <div class="explain ${right ? "good" : "bad"}"><b>${right ? "Correto! +" + fmt(ECONOMY.bonusQuiz) + " de bônus." : "Não foi dessa vez, sem bônus."}</b><br>${q.explain}</div>
-    <button class="btn primary" id="next" data-autofocus type="button">${hasNext ? "Próxima palavra →" : "Ir para a loja →"}</button>`;
+    <div class="explain ${right ? "good" : "bad"}"><b>${right ? "Correto! +" + fmt(bonus) + " de bônus." : "Não foi dessa vez, sem bônus."}</b><br>${q.explain}</div>
+    ${hasNext
+      ? `<button class="btn primary" id="next" data-autofocus type="button">Próxima palavra →</button>`
+      : `<div class="btn-row"><button class="btn ghost" id="later" type="button">Continuar jogando</button><button class="btn primary" id="next" data-autofocus type="button">🛒 Ir para a loja</button></div>`}`;
   $("#next", m).focus();
-  await clickOnce(m, "#next");
-
-  game.pending.push({ tier, termo: w.termo });
-  updateShopBadge();
+  // true = o jogador quer abrir a loja agora; ninguém é obrigado a comprar neste momento
+  return new Promise((res) => {
+    $("#next", m).addEventListener("click", () => res(!hasNext), { once: true });
+    const later = $("#later", m);
+    if (later) later.addEventListener("click", () => res(false), { once: true });
+  });
 }
 
 /* =========================================================
-   Loja: janela por cima do jogo (o tempo fica parado)
+   Loja: sempre aberta, em janela por cima do jogo (o tempo fica parado)
+   Acertar rápido libera peças melhores (nível de acesso, que fica para sempre).
+   Depois disso, o jogador compra quando e o que quiser, limitado só pelo dinheiro.
    ========================================================= */
+
+/* peça atual de um encaixe e custo de trocar por p (devolvendo parte da antiga) */
+const currentPart = (slot) => (game.installed[slot] ? partById[game.installed[slot]] : null);
+function netCost(p) {
+  const cur = currentPart(p.slot);
+  return p.price - (cur ? Math.floor(cur.price * ECONOMY.revenda) : 0);
+}
+function canBuy(p) {
+  const cur = currentPart(p.slot);
+  return p.tier <= game.access && !(cur && cur.tier >= p.tier) && netCost(p) <= game.money;
+}
+const upgradableSlots = () => SLOTS.filter((s) => PARTS.some((p) => p.slot === s.id && canBuy(p)));
+
+/* aba que a loja mostra ao abrir: a primeira em que dá para melhorar agora */
 function bestSlotToUpgrade() {
+  const ok = upgradableSlots();
+  if (ok.length) return ok[0].id;
   let best = SLOTS[0].id, low = 99;
   SLOTS.forEach((s) => { const t = tierOf(s.id); if (t < low) { low = t; best = s.id; } });
   return best;
 }
 
+/* o número no botão é quantos encaixes você pode melhorar com o saldo de agora */
 function updateShopBadge() {
-  const n = game.pending.length;
+  const n = upgradableSlots().length;
   ["#shopBadge", "#pcShopBadge"].forEach((sel) => { const b = $(sel); b.hidden = !n; b.textContent = n; });
-  ["#shopBtn", "#pcShopBtn"].forEach((sel) => $(sel).classList.toggle("glow", n > 0));
+  ["#shopBtn", "#pcShopBtn"].forEach((sel) => $(sel).classList.toggle("glow", game.newUnlock));
 }
 
 /* atualiza o selo da loja e, se a janela estiver aberta, o conteúdo dela */
@@ -619,23 +672,28 @@ function renderShop() {
   if (game.shopOpen) renderShopModal();
 }
 
-function openShop(fresh = false) {
+function openShop(fresh = false, then = null) {
   if (game.paused && !fresh) return; // outra janela já está aberta
   game.shopOpen = true;
-  game.shopFresh = fresh;
+  game.shopFresh = fresh; // aberta logo depois de um acerto: o relógio da velocidade recomeça ao sair
+  game.shopThen = then;
   game.shopBought = false;
   game.shopMsg = "";
-  if (game.pending.length) game.shopSlot = bestSlotToUpgrade();
+  game.newUnlock = false;
+  game.shopSlot = bestSlotToUpgrade();
   const m = showModal(`<div id="shopRoot"></div>`, "shop-modal");
   m.addEventListener("click", shopClick);
   renderShopModal();
+  updateShopBadge();
 }
 
 function closeShop() {
   if (!game.shopOpen) return;
   game.shopOpen = false;
-  hideModal(game.shopFresh || game.shopBought); // acertou agora ou comprou: o relógio recomeça
-  afterModal();
+  hideModal(game.shopFresh); // abrir a loja não zera nem congela o cronômetro: o tempo parado não conta
+  const then = game.shopThen;
+  game.shopThen = null;
+  if (then) then(); else afterModal();
 }
 
 function shopClick(e) {
@@ -643,39 +701,42 @@ function shopClick(e) {
   if (tab) { game.shopSlot = tab.dataset.slot; renderShopModal(); return; }
   const buy = e.target.closest("[data-buy]");
   if (buy) { buyPart(buy.dataset.buy); return; }
-  if (e.target.closest("#skipBtn")) { skipReward(); return; }
   if (e.target.closest("#shopClose") || e.target.closest("#shopDone")) closeShop();
+}
+
+/* o que falta para liberar o próximo nível de peças */
+function unlockTip() {
+  const def = game.L ? game.L.def : LEVELS[0];
+  if (game.access >= 3) return "Todas as peças liberadas.";
+  if (game.access === 2) return `Responda em até ${def.tempoRapido} s, sem dica, para liberar as peças Ouro.`;
+  return `Responda em até ${def.tempoMedio} s para liberar as Prata, ou em até ${def.tempoRapido} s para liberar as Ouro.`;
 }
 
 function renderShopModal() {
   const root = $("#shopRoot");
   if (!root) return;
   const keepScroll = $(".shop-left", root) ? $(".shop-left", root).scrollTop : 0;
-  const reward = game.pending[0];
   const score = computeScore();
   const rank = rankFor(score);
+  const acc = TIERS[game.access];
 
   const sub = game.shopMsg
     ? `<span class="shop-msg">${game.shopMsg}</span>`
-    : reward
-      ? `<span class="chip ${TIERS[reward.tier].classe}">${MEDAL[reward.tier]} ${TIERS[reward.tier].nome}</span> Escolha uma peça (até ${TIERS[reward.tier].nome})${game.pending.length > 1 ? ` · +${game.pending.length - 1} na fila` : ""}`
-      : `🔒 Sem recompensa agora. Acerte uma palavra e responda ao quiz para ganhar uma peça. Você já pode olhar o catálogo.`;
+    : `<span class="chip ${acc.classe}">${MEDAL[game.access]} Acesso ${acc.nome}</span> ${unlockTip()}`;
 
   const tabs = SLOTS.map((s) => `<button class="tab t${tierOf(s.id)}${s.id === game.shopSlot ? " sel" : ""}" data-slot="${s.id}" type="button"><span class="ic">${s.icone}</span>${s.nome}</button>`).join("");
 
-  const cur = game.installed[game.shopSlot] ? partById[game.installed[game.shopSlot]] : null;
+  const cur = currentPart(game.shopSlot);
   const refund = cur ? Math.floor(cur.price * ECONOMY.revenda) : 0;
   const cards = PARTS.filter((p) => p.slot === game.shopSlot).map((p) => {
-    const net = p.price - refund;
-    let note = "", label = "Comprar", disabled = true, bad = false;
-    if (!reward) { note = "Loja só para olhar por enquanto."; label = "Fechada"; }
-    else if (cur && cur.id === p.id) { note = "Instalada no seu PC."; label = "Instalada"; }
-    else if (cur && cur.tier >= p.tier) { note = "Você já tem uma peça melhor ou igual."; label = "—"; }
-    else if (p.tier > reward.tier) { note = `🔒 Exige resposta mais rápida (peça ${TIERS[p.tier].nome}).`; label = "Bloqueada"; }
-    else if (net > game.money) { note = `Faltam ${fmt(net - game.money)}.`; bad = true; label = "Sem saldo"; }
-    else { disabled = false; label = fmt(net); if (cur) note = `Troca por ${cur.nome} (devolve ${fmt(refund)}).`; }
-    const dim = disabled && reward && !(cur && cur.id === p.id) ? " dim" : "";
-    return `<div class="part t${p.tier}${dim}">
+    const net = netCost(p);
+    let note = "", label = fmt(net), disabled = true, bad = false, dim = false;
+    if (cur && cur.id === p.id) { note = "Instalada no seu PC."; label = "Instalada"; }
+    else if (cur && cur.tier >= p.tier) { note = "Você já tem uma peça melhor ou igual."; label = "—"; dim = true; }
+    else if (p.tier > game.access) { note = `🔒 Responda mais rápido para liberar as peças ${TIERS[p.tier].nome}.`; label = "Bloqueada"; dim = true; }
+    else if (net > game.money) { note = `Faltam ${fmt(net - game.money)}. Junte dinheiro e volte quando quiser.`; bad = true; label = "Sem saldo"; }
+    else { disabled = false; if (cur) note = `Troca por ${cur.nome} (devolve ${fmt(refund)}).`; }
+    return `<div class="part t${p.tier}${dim ? " dim" : ""}">
       <div class="thumb">${partThumb(p.slot, p.tier)}</div>
       <div><div class="pname">${p.nome}</div>
         <div class="pmeta"><span class="chip ${TIERS[p.tier].classe}">${TIERS[p.tier].nome}</span><span>${fmt(p.price)}</span><span>+${p.power} pts</span></div></div>
@@ -701,38 +762,25 @@ function renderShopModal() {
       <div class="shop-right">
         <div class="shop-pc">${pcSvg(game.installed, game.justInstalled)}</div>
         <div class="shop-rank"><b>${rank.emoji} ${rank.nome}</b><span>${score} pts</span></div>
-        ${reward ? `<button class="btn ghost small" id="skipBtn" type="button">Guardar o dinheiro (pular esta peça)</button>` : ""}
-        <button class="btn primary" id="shopDone" data-autofocus type="button">${game.pending.length ? "Escolher depois" : "Voltar ao jogo"}</button>
+        <p class="shop-note">A loja fica sempre aberta no botão 🛒 do topo. Seu dinheiro fica guardado até você decidir gastar.</p>
+        <button class="btn primary" id="shopDone" data-autofocus type="button">${game.shopBought ? "Voltar ao jogo" : "Comprar depois"}</button>
       </div>
     </div>`;
   $(".shop-left", root).scrollTop = keepScroll;
 }
 
 function buyPart(id) {
-  const reward = game.pending[0];
-  if (!reward) return;
   const p = partById[id];
-  const cur = game.installed[p.slot] ? partById[game.installed[p.slot]] : null;
-  const net = p.price - (cur ? Math.floor(cur.price * ECONOMY.revenda) : 0);
-  if (p.tier > reward.tier || net > game.money || (cur && cur.tier >= p.tier)) return;
-  game.money -= net;
+  if (!canBuy(p)) return;
+  game.money -= netCost(p);
   game.installed[p.slot] = p.id;
-  game.pending.shift();
   game.shopBought = true;
   game.justInstalled = p.slot;
-  game.shopSlot = bestSlotToUpgrade();
   game.shopMsg = `✅ Instalado: ${p.nome}`;
   updateWallet();
   renderPC();
   renderShop();
   game.justInstalled = null;
-}
-
-function skipReward() {
-  if (!game.pending.length) return;
-  game.pending.shift();
-  game.shopMsg = "Recompensa guardada. O dinheiro continua com você.";
-  renderShop();
 }
 
 /* =========================================================
@@ -743,6 +791,8 @@ function showLevelIntro() {
   const first = game.levelIndex === 0 && game.solvedTotal === 0 && Object.keys(game.installed).length === 0;
   const rules = `
     <ul class="rules">
+      <li>🛒 <span>A loja fica <b>sempre aberta</b>: compre quando quiser. Acertar rápido libera peças melhores</span></li>
+      <li>💰 <span>Cada palavra paga de <b>${fmt(Math.round((ECONOMY.renda[1] * def.mult) / 10) * 10)}</b> (Bronze) a <b>${fmt(Math.round((ECONOMY.renda[3] * def.mult) / 10) * 10)}</b> (Ouro), mais <b>${fmt(Math.round((ECONOMY.bonusQuiz * def.mult) / 10) * 10)}</b> se acertar o quiz</span></li>
       <li>🥇 <span><b>Ouro:</b> até ${def.tempoRapido} s desde o último acerto, sem dica</span></li>
       <li>🥈 <span><b>Prata:</b> até ${def.tempoMedio} s</span></li>
       <li>🥉 <span><b>Bronze:</b> mais lento que isso, ou com dica</span></li>
@@ -750,13 +800,12 @@ function showLevelIntro() {
       ${def.penalidade ? `<li>⚠️ <span>Palavra errada no Conferir: <b>−${fmt(def.penalidade)}</b></span></li>` : `<li>🟢 <span>Neste nível, errar no Conferir não custa dinheiro</span></li>`}
       <li>🔤 <span>${def.reveal === "first" ? "A primeira letra das palavras maiores já vem revelada" : "O tabuleiro começa vazio, sem letras de ajuda"}</span></li>
     </ul>`;
-  const splash = first ? `<div class="splash">${logoSvg("splash-logo")}<div class="splash-title"><span>TUX</span><b>FORGE</b></div><p class="splash-sub">monte seu pc, peça por peça</p></div>` : "";
   const welcome = first ? `
     <p>Acerte as palavras da cruzadinha, leia a descrição, responda ao quiz e <b>monte o seu PC</b>. Quanto mais rápido você acerta, melhores as peças que pode escolher. Mas o dinheiro é limitado!</p>` : "";
   const m = showModal(`
-    ${splash}
     <div class="modal-tag q">Nível ${def.id} de ${LEVELS.length}</div>
     <h2>${def.nome} <span class="diff ${def.dificuldade}">${def.dificuldade}</span></h2>
+    ${game.mode === "dificil" ? '<p style="color:var(--bad);margin:0 0 6px">🔥 Modo tudo no difícil: recompensas 50% maiores.</p>' : ""}
     <p style="color:var(--muted)">${def.sub}</p>
     ${welcome}${rules}
     <button class="btn primary" id="go" data-autofocus type="button">${first ? "Ligar o PC e começar" : "Começar nível"}</button>`);
@@ -769,7 +818,7 @@ function showLevelIntro() {
 function checkLevelEnd() {
   const L = game.L;
   if (game.paused || L.ended) return;
-  if (L.solvedCount === L.words.length && game.pending.length === 0) {
+  if (L.solvedCount === L.words.length) {
     L.ended = true;
     setTimeout(showLevelComplete, 450);
   }
@@ -788,7 +837,8 @@ function showLevelComplete() {
       <div class="stat"><b>${score}</b><small>Pontos do PC</small></div>
     </div>
     <div class="final-pc">${pcSvg()}</div>
-    <button class="btn primary" id="go" data-autofocus type="button">${last ? "Ver resultado final →" : "Próximo nível →"}</button>`);
+    <div class="btn-row"><button class="btn ghost" id="spend" type="button">🛒 Gastar dinheiro</button><button class="btn primary" id="go" data-autofocus type="button">${last ? "Ver resultado final →" : "Próximo nível →"}</button></div>`);
+  $("#spend", m).addEventListener("click", () => openShop(true, showLevelComplete));
   $("#go", m).addEventListener("click", () => (last ? showFinal() : startLevel(game.levelIndex + 1)));
 }
 
@@ -811,7 +861,7 @@ function showFinal() {
     </div>
     <p style="text-align:center;color:var(--muted)">Você terminou com ${fmt(game.money)} no bolso. Dá para montar um PC ainda melhor?</p>
     <button class="btn primary" id="again" data-autofocus type="button">Jogar de novo</button>`);
-  $("#again", m).addEventListener("click", newGame);
+  $("#again", m).addEventListener("click", () => { hideModal(false); showStart(); });
 }
 
 /* =========================================================
@@ -845,6 +895,7 @@ function tick() {
   const tt = $("#timerTier");
   tt.textContent = TIERS[tier].nome;
   tt.className = "t" + tier;
+  $("#timerPay").textContent = "· +" + fmt(Math.round((ECONOMY.renda[tier] * (L.def.mult || 1)) / 10) * 10);
   $("#timerText").textContent = `${Math.floor(t)} s desde o último acerto${game.paused ? " (pausado)" : ""}`;
 }
 
@@ -854,12 +905,17 @@ function init() {
   $("#resetBtn").addEventListener("click", askReset);
   $("#newGameBtn").addEventListener("click", askNewGame);
   $("#brandLogo").innerHTML = logoSvg("brand-svg");
+  $("#startLogo").innerHTML = logoSvg("start-svg");
+  document.querySelectorAll(".mode").forEach((btn) => btn.addEventListener("click", () => {
+    document.querySelectorAll(".mode").forEach((x) => { x.classList.toggle("sel", x === btn); x.setAttribute("aria-checked", x === btn); });
+  }));
+  $("#startBtn").addEventListener("click", beginGame);
   $("#shopBtn").addEventListener("click", () => openShop(false));
   $("#pcShopBtn").addEventListener("click", () => openShop(false));
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && game.shopOpen) closeShop(); });
   window.addEventListener("resize", updateCellSize);
   setInterval(tick, 250);
-  startLevel(0);
+  showStart();
 }
 
 init();
