@@ -686,3 +686,7 @@ body { overflow: hidden; }
 }
 
 .shop-note { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.4; }
+
+/* botão de pular nível */
+#skipBtn { border-color: rgba(255, 176, 46, 0.6); color: #ffd58a; }
+#skipBtn:hover:not(:disabled) { border-color: #ffb02e; background: rgba(255, 176, 46, 0.1); }
