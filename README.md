@@ -20,7 +20,7 @@
    | 🥉 | lenta, ou com 💡 dica | peças básicas (GTX 1650, Pentium G7400, 8 GB de RAM…) |
 
    A loja está **sempre aberta** (botão 🛒), abre numa janela por cima do jogo e **o tempo para** enquanto você olha. Peça liberada fica liberada para sempre, então é você quem decide quando gastar e quando guardar o dinheiro. As peças são reais, de um Pentium G7400 a uma RTX 5090.
-4. **Passe pelos 3 níveis** e descubra que PC você montou, de *Calculadora de bolso* a *Supercomputador*.
+4. **Passe pelos 3 níveis** e descubra que PC você montou. São 7 títulos, de *Caixa de papelão* e *Torradeira com Wi-Fi* até *PC gamer ultra* e *Supercomputador*, e dá para ver todos clicando no título do seu PC (aba 🏅 do guia).
 
 Se travar, use **💡 Dica** (custa dinheiro e rebaixa a peça) ou **⟲ Reiniciar** para limpar o nível.
 
