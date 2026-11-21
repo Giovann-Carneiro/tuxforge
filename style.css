@@ -508,9 +508,8 @@ body::before {
    LAYOUT 2: só a cruzadinha + PC ao lado; loja em janela
    ========================================================= */
 .brand { display: flex; align-items: center; gap: 10px; }
-.brand-logo { display: block; width: 46px; height: 43px; flex: none; }
-.brand-svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 0 8px rgba(255, 91, 214, 0.55)); }
-.lg-eye { transform-box: fill-box; transform-origin: center; animation: catblink 5.5s infinite; }
+.brand-logo { display: block; width: 46px; height: 46px; flex: none; }
+.brand-logo img { width: 100%; height: 100%; display: block; filter: drop-shadow(0 0 8px rgba(197, 139, 255, 0.6)); }
 @keyframes catblink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.08); } }
 
 .layout { max-width: 1400px; grid-template-columns: minmax(0, 1fr) 360px; padding-top: 24px; }
@@ -642,8 +641,8 @@ body { overflow: hidden; }
 }
 .start[hidden] { display: none; }
 .start-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; text-align: center; width: min(780px, 100%); }
-.start-logo { display: block; width: 118px; margin-bottom: 4px; }
-.start-svg { width: 100%; height: auto; display: block; filter: drop-shadow(0 0 20px rgba(255, 91, 214, 0.6)); animation: floaty 3.2s ease-in-out infinite; }
+.start-logo { display: block; width: 200px; margin-bottom: -6px; }
+.start-logo img { width: 100%; height: auto; display: block; filter: drop-shadow(0 0 22px rgba(197, 139, 255, 0.55)); animation: floaty 3.2s ease-in-out infinite; }
 .start .title { --F: clamp(2.8rem, 10vw, 6.2rem); margin-bottom: calc(var(--F) * 0.8); }
 .start .byline { margin-bottom: 26px; }
 .start .s1 { --sz: 26px; left: 10%; top: 24%; } .start .s2 { --sz: 16px; left: 22%; bottom: 20%; }
@@ -690,3 +689,39 @@ body { overflow: hidden; }
 /* botão de pular nível */
 #skipBtn { border-color: rgba(255, 176, 46, 0.6); color: #ffd58a; }
 #skipBtn:hover:not(:disabled) { border-color: #ffb02e; background: rgba(255, 176, 46, 0.1); }
+
+/* =========================================================
+   VERSÃO MAIS LIMPA: menos enfeite e menos repetição
+   ========================================================= */
+.panel { outline: none; border-width: 1px; border-color: #5a2d93; box-shadow: 0 0 18px rgba(197, 139, 255, 0.1); }
+.panel::after { display: none; }
+body::before { opacity: 0.45; animation: none; }
+.layout { gap: clamp(12px, 1.4vw, 18px); }
+
+/* a pista ativa já aparece destacada na lista; o banner só serve em tela pequena */
+@media (min-width: 901px) { .active-clue { display: none; } }
+
+.hudbar { grid-template-columns: auto 1fr auto; gap: 16px; padding: 0 2px 12px; align-items: center; }
+.hudbar strong { font-size: 0.8rem; }
+.hud-timer { display: flex; flex-direction: column; gap: 5px; }
+.tier-line { font-size: 0.72rem; color: var(--muted); }
+#timerText { font-family: var(--font-hd); font-size: 0.74rem; color: var(--muted); min-width: 3.4em; text-align: right; }
+
+.clue-col ol { gap: 4px; }
+.clue-col li { gap: 8px; padding: 6px 8px; font-size: 0.82rem; }
+.clue-col li .len { font-size: 0.68rem; opacity: 0.6; }
+
+.specs { grid-template-columns: repeat(8, 1fr); gap: 4px; margin: 8px 0 0; }
+.spec { padding: 3px; }
+.spec .sthumb { height: 26px; border-radius: 5px; }
+.spec .sl { display: none; }
+
+.actions { gap: 8px; }
+.actions .btn { padding: 9px 14px; font-size: 0.88rem; }
+.actions .primary { min-width: 140px; }
+#resetBtn { border-color: var(--line); color: var(--muted); }
+#resetBtn:hover:not(:disabled) { border-color: var(--bad); color: #ff9aa4; background: rgba(255, 93, 108, 0.08); }
+.message { font-size: 0.82rem; color: var(--muted); }
+
+/* janela das regras do nível mais enxuta */
+.rules { gap: 8px; font-size: 0.92rem; }
