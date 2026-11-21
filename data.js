@@ -337,3 +337,113 @@ const RANKS = [
   { min: 260, nome: "PC gamer ultra", emoji: "🔥" },
   { min: 340, nome: "Supercomputador", emoji: "🚀" },
 ];
+
+/* ---------- Desafio para pular de nível ----------
+   Perguntas muito difíceis: a primeira alternativa é a certa (o jogo embaralha).
+   Quem erra espera SKIP.espera segundos e a pergunta errada não volta. */
+const SKIP = { espera: 60 };
+
+const HARD_QUESTIONS = [
+  {
+    q: "Um barramento de endereços com 20 linhas consegue endereçar quantas posições de memória?",
+    options: ["1.048.576 (1 Mi)", "20.000", "65.536", "4.194.304"],
+    correct: 0,
+    explain: "Com n linhas há 2ⁿ endereços: 2²⁰ = 1.048.576 posições.",
+  },
+  {
+    q: "Uma CPU tem barramento de endereços de 16 bits e barramento de dados de 8 bits. Qual é a maior memória que ela consegue acessar?",
+    options: ["64 KB (65.536 bytes)", "16 KB", "256 bytes", "128 KB"],
+    correct: 0,
+    explain: "2¹⁶ endereços × 1 byte (8 bits) por posição = 65.536 bytes.",
+  },
+  {
+    q: "Quantos bits de endereço são necessários para endereçar 4 GB de memória, byte a byte?",
+    options: ["32 bits", "30 bits", "34 bits", "16 bits"],
+    correct: 0,
+    explain: "4 GB = 2³² bytes, então são necessárias 32 linhas de endereço.",
+  },
+  {
+    q: "Um barramento de dados de 32 bits transfere quantos bytes em cada operação de leitura ou escrita?",
+    options: ["4 bytes", "8 bytes", "32 bytes", "2 bytes"],
+    correct: 0,
+    explain: "32 bits ÷ 8 = 4 bytes por transferência.",
+  },
+  {
+    q: "Ordene do acesso mais rápido para o mais lento:",
+    options: [
+      "Registradores → cache → RAM → memória de massa",
+      "Cache → registradores → RAM → memória de massa",
+      "Registradores → RAM → cache → memória de massa",
+      "RAM → cache → registradores → memória de massa",
+    ],
+    correct: 0,
+    explain: "Quanto mais perto da ULA, mais rápida (e menor, e mais cara por byte) é a memória.",
+  },
+  {
+    q: "Qual é a diferença de apagamento entre uma EEPROM e uma memória Flash?",
+    options: [
+      "A EEPROM apaga byte a byte; a Flash apaga por blocos",
+      "A EEPROM só apaga com luz ultravioleta; a Flash, com calor",
+      "As duas só conseguem apagar o chip inteiro",
+      "A Flash apaga byte a byte; a EEPROM apaga por blocos",
+    ],
+    correct: 0,
+    explain: "A EEPROM permite regravar cada byte; a Flash apaga blocos inteiros, o que a torna mais densa e barata.",
+  },
+  {
+    q: "Durante uma transferência por DMA, quem comanda os barramentos de endereço e de dados?",
+    options: ["O controlador de DMA, com a CPU liberada", "A CPU, que copia byte a byte", "A ULA", "A memória cache"],
+    correct: 0,
+    explain: "A CPU cede os barramentos ao controlador de DMA, que move os dados direto entre o periférico e a memória.",
+  },
+  {
+    q: "O que é um \"cache hit\"?",
+    options: [
+      "O dado procurado já está na cache, e o acesso à RAM é evitado",
+      "O dado não está na cache e precisa ser buscado na RAM",
+      "A cache foi apagada por falta de energia",
+      "A CPU gravou o dado direto no HD",
+    ],
+    correct: 0,
+    explain: "Hit = acerto na cache. Quando o dado não está lá, é um miss e a CPU espera a RAM.",
+  },
+  {
+    q: "Um programa que executa uma única tarefa sequencial, sem dividir o trabalho, roda em um processador quad core. O que tende a acontecer?",
+    options: [
+      "Usa basicamente um núcleo, então o ganho sobre um dual core é pequeno",
+      "Roda 4 vezes mais rápido",
+      "Usa os 4 núcleos automaticamente",
+      "Roda mais devagar que em um processador de um núcleo",
+    ],
+    correct: 0,
+    explain: "Núcleos extras só ajudam quando o software divide o trabalho em várias tarefas.",
+  },
+  {
+    q: "Por que a memória cache L1 é muito menor que a RAM?",
+    options: [
+      "Porque é muito rápida e cara, e ocupa área nobre do chip",
+      "Porque só guarda programas, nunca dados",
+      "Porque é mais lenta que a RAM",
+      "Porque é gravada uma única vez na fábrica",
+    ],
+    correct: 0,
+    explain: "Velocidade custa área e dinheiro: por isso a hierarquia tem poucas memórias muito rápidas e muitas mais lentas.",
+  },
+  {
+    q: "Qual característica diferencia um microcontrolador de um microprocessador de uso geral?",
+    options: [
+      "Integra CPU, memória e entradas/saídas em um único chip",
+      "Não tem nenhum tipo de memória",
+      "Só existe em servidores",
+      "Não executa instruções",
+    ],
+    correct: 0,
+    explain: "O microcontrolador é um computador inteiro em um chip, feito para controlar um dispositivo específico.",
+  },
+  {
+    q: "Qual registrador guarda o endereço da próxima instrução a ser buscada?",
+    options: ["Contador de programa (PC)", "Acumulador", "Registrador de dados", "Ponteiro de pilha"],
+    correct: 0,
+    explain: "O contador de programa aponta para a próxima instrução; a UC o atualiza a cada busca.",
+  },
+];
