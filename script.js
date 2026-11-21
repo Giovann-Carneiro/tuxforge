@@ -24,6 +24,134 @@ const shuffle = (arr) => {
 const normalizeLetter = (s) =>
   s.normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase().replace(/[^A-Z]/g, "");
 
+/* ---------- sons: gerados no navegador, sem arquivos ---------- */
+const sfx = (() => {
+  let ctx = null, on = true;
+  try { on = localStorage.getItem("tuxforge.sound") !== "off"; } catch (e) { /* sem armazenamento: segue ligado */ }
+  const ensure = () => {
+    if (!on) return null;
+    try {
+      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === "suspended") ctx.resume();
+      return ctx;
+    } catch (e) { return null; }
+  };
+  const tone = (f, at, dur, type = "sine", vol = 0.1, to = null) => {
+    const c = ensure();
+    if (!c) return;
+    const t0 = c.currentTime + at, o = c.createOscillator(), g = c.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(f, t0);
+    if (to) o.frequency.exponentialRampToValueAtTime(to, t0 + dur);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(vol, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(t0); o.stop(t0 + dur + 0.03);
+  };
+  const arp = (notes, step = 0.08, dur = 0.16, type = "triangle", vol = 0.1) => notes.forEach((n, i) => tone(n, i * step, dur, type, vol));
+  const S = {
+    click: () => tone(760, 0, 0.05, "square", 0.035),
+    key: () => tone(480 + Math.random() * 120, 0, 0.04, "triangle", 0.05),
+    correct: () => arp([523, 659, 784, 1047], 0.07, 0.18),
+    wrong: () => { tone(230, 0, 0.2, "sawtooth", 0.07, 120); tone(170, 0.13, 0.26, "sawtooth", 0.07, 80); },
+    coin: () => { tone(988, 0, 0.07, "square", 0.05); tone(1319, 0.07, 0.18, "square", 0.05); },
+    buy: () => { tone(300, 0, 0.18, "sawtooth", 0.05, 900); arp([659, 880, 1175], 0.08, 0.2, "triangle", 0.09); },
+    unlock: () => arp([392, 523, 659, 784, 1047], 0.09, 0.26, "triangle", 0.1),
+    level: () => arp([523, 659, 784, 1047, 784, 1047, 1319], 0.1, 0.3, "triangle", 0.11),
+    open: () => tone(300, 0, 0.18, "sine", 0.07, 700),
+    hint: () => { tone(880, 0, 0.1, "sine", 0.07); tone(660, 0.09, 0.14, "sine", 0.06); },
+    tierdown: () => tone(520, 0, 0.18, "triangle", 0.05, 330),
+    boot: () => { tone(110, 0, 0.5, "sawtooth", 0.05, 440); arp([440, 554, 659, 880], 0.1, 0.22, "square", 0.05); },
+    ach: () => arp([784, 988, 1175, 1568], 0.08, 0.22, "sine", 0.1),
+  };
+  return {
+    get on() { return on; },
+    play(name) { try { if (on && S[name]) S[name](); } catch (e) { /* o som é opcional */ } },
+    toggle() {
+      on = !on;
+      try { localStorage.setItem("tuxforge.sound", on ? "on" : "off"); } catch (e) { /* ignorar */ }
+      if (on) { ensure(); S.click(); }
+      return on;
+    },
+  };
+})();
+
+/* ---------- conquistas (ficam salvas no navegador) ---------- */
+const ach = (() => {
+  let got = new Set();
+  try { got = new Set(JSON.parse(localStorage.getItem("tuxforge.ach") || "[]")); } catch (e) { /* começa vazio */ }
+  return {
+    has: (id) => got.has(id),
+    count: () => got.size,
+    give(id) {
+      const a = ACHIEVEMENTS.find((x) => x.id === id);
+      if (!a || got.has(id)) return;
+      got.add(id);
+      try { localStorage.setItem("tuxforge.ach", JSON.stringify([...got])); } catch (e) { /* ignorar */ }
+      sfx.play("ach");
+      const el = document.createElement("div");
+      el.className = "achievement";
+      el.innerHTML = `<span class="ic">${a.icone}</span><span><b>Conquista desbloqueada!</b><br>${a.nome}</span>`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3800);
+    },
+  };
+})();
+
+/* ---------- efeitos visuais ---------- */
+const reduceMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* texto que sobe e some perto do saldo (+R$ / −R$) */
+function floatText(text, cls) {
+  const w = document.querySelector(".wallet");
+  if (!w || reduceMotion()) return;
+  const r = w.getBoundingClientRect();
+  const el = document.createElement("div");
+  el.className = "floaty " + cls;
+  el.textContent = text;
+  el.style.left = Math.round(r.left + r.width / 2) + "px";
+  el.style.top = Math.round(r.bottom + 4) + "px";
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1400);
+}
+
+/* chuva de confete */
+function confetti(n = 60) {
+  if (reduceMotion()) return;
+  const box = document.createElement("div");
+  box.className = "confetti";
+  const cols = ["#ff3d6e", "#ff9a2e", "#ffe03a", "#3dff7a", "#35e0ff", "#b44dff", "#ff4dd2"];
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement("i");
+    p.style.left = Math.random() * 100 + "%";
+    p.style.background = cols[i % cols.length];
+    p.style.animationDelay = Math.random() * 0.5 + "s";
+    p.style.animationDuration = 1.8 + Math.random() * 1.6 + "s";
+    p.style.setProperty("--dx", Math.round(Math.random() * 160 - 80) + "px");
+    p.style.setProperty("--rot", Math.round(Math.random() * 720 - 360) + "deg");
+    box.appendChild(p);
+  }
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), 4000);
+}
+
+/* o saldo "rola" até o novo valor */
+let moneyShown = null, moneyRaf = 0;
+function paintMoney() {
+  const el = document.querySelector("#money"), target = game.money;
+  cancelAnimationFrame(moneyRaf);
+  if (moneyShown === null || reduceMotion()) { moneyShown = target; el.textContent = fmt(target); return; }
+  const from = moneyShown, t0 = performance.now();
+  const step = (now) => {
+    const k = Math.min(1, (now - t0) / 600);
+    moneyShown = Math.round(from + (target - from) * (1 - Math.pow(1 - k, 3)));
+    el.textContent = fmt(moneyShown);
+    if (k < 1) moneyRaf = requestAnimationFrame(step);
+  };
+  moneyRaf = requestAnimationFrame(step);
+}
+
 /* ---------- estado ---------- */
 const game = {
   mode: "recomendado", // "recomendado" (fácil → difícil) ou "dificil" (tudo no difícil)
@@ -31,6 +159,9 @@ const game = {
   money: ECONOMY.inicial,
   installed: {}, // slotId -> partId
   solvedTotal: 0,
+  streak: 0, // acertos limpos seguidos (combo)
+  quizStreak: 0, // acertos seguidos no quiz
+  lastTier: 0,
   skipUsed: [], // perguntas difíceis já sorteadas
   skipUntil: 0, // até quando o botão de pular fica bloqueado (depois de errar)
   access: 1, // maior tier de peças liberado na loja (1 Bronze, 2 Prata, 3 Ouro): fica para sempre
@@ -68,6 +199,9 @@ function renderPC() {
   const rank = rankFor(score);
   $("#score").textContent = score;
   $("#rankName").textContent = `${rank.emoji} ${rank.nome}`;
+  const next = RANKS.find((r) => r.min > score);
+  $("#rankNext").textContent = next ? `faltam ${next.min - score} pts para ${next.emoji} ${next.nome}` : "título máximo!";
+  $("#rankFill").style.width = (next ? Math.round(((score - rank.min) / (next.min - rank.min)) * 100) : 100) + "%";
   $("#specs").innerHTML = SLOTS.map((sl) => {
     const p = game.installed[sl.id] ? partById[game.installed[sl.id]] : null;
     const flash = game.justInstalled === sl.id ? " flash" : "";
@@ -77,7 +211,7 @@ function renderPC() {
 }
 
 function updateWallet(bump = false) {
-  $("#money").textContent = fmt(game.money);
+  paintMoney();
   updateShopBadge();
   if (bump) {
     const w = $(".wallet");
@@ -86,7 +220,12 @@ function updateWallet(bump = false) {
     w.classList.add("bump");
   }
 }
-function addMoney(n) { game.money += n; updateWallet(true); renderShop(); }
+function addMoney(n) {
+  game.money += n;
+  if (n > 0) { floatText("+" + fmt(n), "gain"); sfx.play("coin"); }
+  updateWallet(true);
+  renderShop();
+}
 
 /* =========================================================
    Modal e toast
@@ -147,7 +286,7 @@ function levelDef(i) {
 function loadLevel(i) {
   const def = levelDef(i);
   game.levelIndex = i;
-  const L = { def, words: [], cells: new Map(), wi: 0, dir: "H", cur: null, lastMark: performance.now(), solvedCount: 0, ended: false };
+  const L = { def, words: [], cells: new Map(), wi: 0, dir: "H", cur: null, lastMark: performance.now(), solvedCount: 0, ended: false, mistakes: 0, hints: 0 };
 
   def.words.forEach((w, idx) => {
     const cells = [];
@@ -201,6 +340,7 @@ function renderBoard() {
   L.cells.forEach((cell) => {
     const el = document.createElement("div");
     el.className = "cell" + (cell.given ? " given" : "");
+    el.style.animationDelay = cell.r * 35 + cell.c * 25 + "ms";
     el.style.gridRow = cell.r + 1;
     el.style.gridColumn = cell.c + 1;
     if (numAt[cell.key]) el.insertAdjacentHTML("beforeend", `<span class="num">${numAt[cell.key]}</span>`);
@@ -317,7 +457,7 @@ function bindCell(cell) {
     if (burst.length > 1) { input.value = cell.value; spreadLetters(cell, burst); return; }
     const v = normalizeLetter(input.value).slice(-1);
     setCellValue(cell, v);
-    if (v) advance(cell);
+    if (v) { sfx.play("key"); advance(cell); }
   });
 
   input.addEventListener("keydown", (e) => {
@@ -435,18 +575,22 @@ async function conferir() {
   bad.forEach(({ w, guess }) => {
     wordCells(w).forEach((c) => { if (!c.locked) { c.el.classList.remove("wrong"); void c.el.offsetWidth; c.el.classList.add("wrong"); } });
     w.li.classList.add("wrong");
+    if (w.sig !== guess) L.mistakes++;
+    game.streak = 0;
     if (L.def.penalidade && w.sig !== guess) penalty += L.def.penalidade;
     w.sig = guess;
   });
   if (penalty) {
     const lost = Math.min(penalty, game.money);
     game.money -= lost;
+    floatText("−" + fmt(lost), "loss");
     updateWallet();
     renderShop();
   }
 
   /* palavras certas: travam e entram na fila de recompensas */
   ok.forEach((w) => {
+    w.clean = !w.hint && w.sig === null;
     w.solved = true;
     L.solvedCount++;
     game.solvedTotal++;
@@ -467,6 +611,8 @@ async function conferir() {
   if (bad.length) parts.push(`<span class="bad">✖ ${bad.length} ${bad.length > 1 ? "erradas" : "errada"}${penalty ? ` (−${fmt(penalty)})` : ""}</span>`);
   if (inc.length) parts.push(`<span class="inc">… ${inc.length} incompleta${inc.length > 1 ? "s" : ""}</span>`);
   $("#message").innerHTML = parts.join(" &nbsp;·&nbsp; ");
+  if (ok.length) sfx.play("correct"); else if (bad.length) sfx.play("wrong");
+  updateHud();
   if (bad.length) toast(penalty ? `Palavra errada! −${fmt(penalty)}` : "Tem palavra errada. Revise as casas em vermelho.", true);
 
   if (ok.length) {
@@ -499,6 +645,11 @@ function useHint() {
   const target = wordCells(w).find((c) => c.value !== c.ans && !c.locked);
   if (!target) { toast("Esta palavra já está toda preenchida corretamente."); return; }
   game.money -= cost;
+  L.hints++;
+  game.streak = 0;
+  updateHud();
+  floatText("−" + fmt(cost), "loss");
+  sfx.play("hint");
   target.value = target.ans;
   target.input.value = target.ans;
   target.hinted = true;
@@ -586,6 +737,9 @@ function showSkipQuestion() {
     });
     if (right) {
       addMoney(prize);
+      ach.give("skip_win");
+      confetti(40);
+      sfx.play("level");
       $("#fb", m).innerHTML = `
         <div class="explain good"><b>Acertou! Desafio vencido: +${fmt(prize)}.</b><br>${q.explain}</div>
         <button class="btn primary" id="go2" data-autofocus type="button">${last ? "Ver resultado final →" : "Ir para o próximo nível →"}</button>`;
@@ -593,6 +747,7 @@ function showSkipQuestion() {
       $("#go2", m).addEventListener("click", () => (last ? showFinal() : startLevel(game.levelIndex + 1)));
     } else {
       game.skipUntil = performance.now() + SKIP.espera * 1000;
+      sfx.play("wrong");
       $("#fb", m).innerHTML = `
         <div class="explain bad"><b>Errou. Você continua neste nível.</b> Dá para tentar de novo em ${SKIP.espera} s.<br>${q.explain}</div>
         <button class="btn primary" id="back" data-autofocus type="button">Voltar ao jogo</button>`;
@@ -633,6 +788,7 @@ function showStart() {
 }
 
 function beginGame() {
+  sfx.play("boot");
   game.mode = $(".mode.sel").dataset.mode;
   $("#start").hidden = true;
   document.body.classList.remove("modal-open");
@@ -647,6 +803,8 @@ function newGame() {
   game.newUnlock = false;
   game.skipUsed = [];
   game.skipUntil = 0;
+  game.streak = 0;
+  game.quizStreak = 0;
   game.shopSlot = "cpu";
   startLevel(0);
 }
@@ -659,11 +817,17 @@ async function runWordFlow(w, hasNext) {
   const tier = w.hint ? 1 : w.elapsed <= def.tempoRapido ? 3 : w.elapsed <= def.tempoMedio ? 2 : 1;
   const t = TIERS[tier];
   const mult = def.mult || 1;
-  const income = Math.round((ECONOMY.renda[tier] * mult) / 10) * 10;
+  game.streak = w.clean ? game.streak + 1 : 0;
+  const comboPct = Math.min(Math.max(game.streak - 1, 0), 5) * 10; // +10% por acerto limpo seguido, até +50%
+  const base = Math.round((ECONOMY.renda[tier] * mult) / 10) * 10;
+  const income = Math.round((base * (1 + comboPct / 100)) / 10) * 10;
   const bonus = Math.round((ECONOMY.bonusQuiz * mult) / 10) * 10;
   addMoney(income);
+  updateHud();
+  if (game.streak >= 5) ach.give("combo5");
+  if (!w.hint && w.elapsed <= 10) ach.give("lightning");
   const unlocked = tier > game.access;
-  if (unlocked) { game.access = tier; game.newUnlock = true; updateShopBadge(); }
+  if (unlocked) { game.access = tier; game.newUnlock = true; updateShopBadge(); sfx.play("unlock"); confetti(36); }
 
   const why = w.hint ? "usou dica" : `${Math.round(w.elapsed)} s`;
   let m = showModal(`
@@ -671,7 +835,7 @@ async function runWordFlow(w, hasNext) {
     <h2 class="reveal">${w.termo}</h2>
     <div class="tier-banner ${t.classe}">
       <span class="medal">${MEDAL[tier]}</span>
-      <span class="grow"><span class="chip ${t.classe}">${t.nome}</span> ${why}${unlocked ? ` · 🔓 peças ${t.nome} liberadas na loja!` : ""}</span>
+      <span class="grow"><span class="chip ${t.classe}">${t.nome}</span> ${why}${comboPct ? ` · 🔥 combo ×${game.streak} (+${comboPct}%)` : ""}${unlocked ? ` · 🔓 peças ${t.nome} liberadas na loja!` : ""}</span>
       <span class="money">+${fmt(income)}</span>
     </div>
     <p>${w.desc}</p>
@@ -694,7 +858,7 @@ async function runWordFlow(w, hasNext) {
     if (opts[i].right) b.classList.add("right");
     else if (i === chosen) b.classList.add("wrongopt");
   });
-  if (right) addMoney(bonus);
+  if (right) { addMoney(bonus); game.quizStreak++; sfx.play("correct"); if (game.quizStreak >= 5) ach.give("quiz5"); } else { game.quizStreak = 0; sfx.play("wrong"); }
   $("#fb", m).innerHTML = `
     <div class="explain ${right ? "good" : "bad"}"><b>${right ? "Correto! +" + fmt(bonus) + " de bônus." : "Não foi dessa vez, sem bônus."}</b><br>${q.explain}</div>
     ${hasNext
@@ -759,6 +923,7 @@ function openShop(fresh = false, then = null) {
   game.shopBought = false;
   game.shopMsg = "";
   game.newUnlock = false;
+  sfx.play("open");
   game.shopSlot = bestSlotToUpgrade();
   const m = showModal(`<div id="shopRoot"></div>`, "shop-modal");
   m.addEventListener("click", shopClick);
@@ -851,7 +1016,10 @@ function renderShopModal() {
 function buyPart(id) {
   const p = partById[id];
   if (!canBuy(p)) return;
-  game.money -= netCost(p);
+  const gasto = netCost(p);
+  game.money -= gasto;
+  floatText("−" + fmt(gasto), "loss");
+  sfx.play("buy");
   game.installed[p.slot] = p.id;
   game.shopBought = true;
   game.justInstalled = p.slot;
@@ -860,6 +1028,10 @@ function buyPart(id) {
   renderPC();
   renderShop();
   game.justInstalled = null;
+  ach.give("first_part");
+  const tiers = Object.values(game.installed).map((id) => partById[id].tier);
+  if (tiers.length === SLOTS.length) ach.give("full_pc");
+  if (tiers.filter((x) => x === 3).length >= 3) ach.give("gold3");
 }
 
 /* =========================================================
@@ -902,9 +1074,13 @@ function showLevelComplete() {
   const L = game.L;
   const last = game.levelIndex === LEVELS.length - 1;
   const score = computeScore();
+  const fails = L.mistakes + L.hints;
+  const stars = fails === 0 ? 3 : fails <= 2 ? 2 : 1;
+  if (!L.celebrated) { L.celebrated = true; confetti(70); sfx.play("level"); if (fails === 0) ach.give("clean_level"); }
   const m = showModal(`
     <div class="modal-tag">✔ Nível concluído</div>
     <h2 class="reveal">${L.def.nome}</h2>
+    <div class="stars" aria-label="${stars} de 3 estrelas">${[1, 2, 3].map((i) => `<span class="star${i <= stars ? " on" : ""}" style="animation-delay:${0.2 + i * 0.25}s">★</span>`).join("")}</div>
     <div class="stats">
       <div class="stat"><b>${L.solvedCount}/${L.words.length}</b><small>Palavras</small></div>
       <div class="stat"><b>${fmt(game.money)}</b><small>Saldo</small></div>
@@ -924,6 +1100,9 @@ function showFinal() {
     best = Number(localStorage.getItem("tuxforge.best") || 0);
     if (score > best) { best = score; localStorage.setItem("tuxforge.best", String(score)); }
   } catch (e) { best = Math.max(best, score); }
+  confetti(90);
+  sfx.play("level");
+  if (score >= RANKS[RANKS.length - 1].min) ach.give("super");
   const m = showModal(`
     <div class="modal-tag">🏁 PC forjado</div>
     <div class="rank-big"><span class="em">${rank.emoji}</span>${rank.nome}</div>
@@ -945,6 +1124,9 @@ function updateHud() {
   const L = game.L;
   $("#counter").textContent = `${L.solvedCount} de ${L.words.length} palavras`;
   $("#skipBtn").textContent = skipLabel();
+  const cb = $("#combo");
+  cb.hidden = game.streak < 2;
+  cb.textContent = `🔥 combo ×${game.streak}`;
   $("#levelPill").textContent = `Nível ${L.def.id}/${LEVELS.length} · ${L.def.dificuldade}`;
 }
 
@@ -967,13 +1149,97 @@ function tick() {
   fill.style.width = pct + "%";
   fill.className = "meter-fill t" + tier;
   const tt = $("#timerTier");
+  const dropped = game.lastTier && tier < game.lastTier && !game.paused;
+  game.lastTier = tier;
   tt.textContent = TIERS[tier].nome;
   tt.className = "t" + tier;
+  if (dropped) { tt.classList.add("flash"); sfx.play("tierdown"); }
   const wait = Math.ceil((game.skipUntil - performance.now()) / 1000);
   $("#skipBtn").disabled = wait > 0;
   $("#skipBtn").textContent = wait > 0 ? `⏭ Pular (${wait} s)` : skipLabel();
   $("#timerPay").textContent = "· +" + fmt(Math.round((ECONOMY.renda[tier] * (L.def.mult || 1)) / 10) * 10);
   $("#timerText").textContent = `${Math.floor(t)} s${game.paused ? " ⏸" : ""}`;
+}
+
+/* =========================================================
+   Guia dos termos: explicação, como identificar, dicas e conquistas
+   ========================================================= */
+const letrasDe = Object.fromEntries(LEVELS.flatMap((l) => l.words).map((w) => [w.id, w.answer.length]));
+
+function openGuide() {
+  if (game.paused && !document.querySelector(".guide")) return; // outra janela já está aberta
+  ach.give("guide");
+  const st = { tab: "termos", cat: "Todos" };
+  const cats = ["Todos", ...new Set(GUIDE.map((g) => g.cat))];
+  const m = showModal(`<div class="guide"></div>`, "guide-modal");
+
+  const draw = () => {
+    let body = "";
+    if (st.tab === "termos") {
+      body = `<div class="chips">${cats.map((c) => `<button class="gchip${c === st.cat ? " sel" : ""}" data-cat="${c}" type="button">${c}</button>`).join("")}</div>
+        <div class="terms">${GUIDE.filter((g) => st.cat === "Todos" || g.cat === st.cat).map((g) => `
+          <article class="term">
+            <header><b>${WORDS[g.id].termo}</b><span class="letters">${letrasDe[g.id]} letras</span><span class="cat">${g.cat}</span></header>
+            <p>${g.resumo}</p>
+            <div class="sinais"><span>🔎 Como identificar</span><ul>${g.sinais.map((s) => `<li>${s}</li>`).join("")}</ul></div>
+            <p class="nao"><span>⚖️ Não confunda:</span> ${g.nao}</p>
+          </article>`).join("")}</div>`;
+    } else if (st.tab === "dicas") {
+      body = `<div class="tips">${TIPS.map((t, i) => `<div class="tip"><span class="n">${i + 1}</span><div><b>${t.t}</b><p>${t.d}</p></div></div>`).join("")}</div>`;
+    } else {
+      body = `<div class="achs">${ACHIEVEMENTS.map((a) => `<div class="ach${ach.has(a.id) ? " on" : ""}"><span class="ic">${ach.has(a.id) ? a.icone : "🔒"}</span><div><b>${a.nome}</b><p>${a.desc}</p></div></div>`).join("")}</div>`;
+    }
+    const tab = (id, label) => `<button class="gtab${st.tab === id ? " sel" : ""}" data-tab="${id}" type="button">${label}</button>`;
+    $(".guide", m).innerHTML = `
+      <div class="guide-top"><div><div class="modal-tag q">Guia</div><h2>Guia dos termos</h2></div><button class="icon-btn" id="guideClose" type="button" aria-label="Fechar o guia">✕</button></div>
+      <div class="gtabs">${tab("termos", "📚 Termos")}${tab("dicas", "🧭 Como atacar")}${tab("conquistas", `🏆 Conquistas ${ach.count()}/${ACHIEVEMENTS.length}`)}</div>
+      <div class="guide-body">${body}</div>`;
+  };
+  draw();
+  m.addEventListener("click", (e) => {
+    const tab = e.target.closest("[data-tab]");
+    if (tab) { st.tab = tab.dataset.tab; draw(); return; }
+    const cat = e.target.closest("[data-cat]");
+    if (cat) { st.cat = cat.dataset.cat; draw(); return; }
+    if (e.target.closest("#guideClose")) closeGuide();
+  });
+}
+
+function closeGuide() {
+  if (!document.querySelector(".guide")) return;
+  hideModal(false);
+  if (game.L && $("#start").hidden) afterModal();
+}
+
+/* =========================================================
+   Tela de carregamento (barra, mensagens e pré-carga das imagens)
+   ========================================================= */
+function runBoot() {
+  const boot = $("#boot");
+  if (!boot) return;
+  const msgs = ["Ligando a CPU…", "Carregando a RAM…", "Montando o gabinete…", "Acendendo as ventoinhas RGB…", "Tudo pronto!"];
+  const total = reduceMotion() ? 400 : 1900, t0 = performance.now();
+  const imgs = ["img/logo-gato.png", "img/logo-gato-pequeno.png"].map((src) => new Promise((r) => { const i = new Image(); i.onload = i.onerror = r; i.src = src; }));
+  let loaded = false, finished = false;
+  Promise.all([...imgs, document.fonts ? document.fonts.ready : Promise.resolve()]).then(() => { loaded = true; });
+  const done = () => {
+    if (finished) return;
+    finished = true;
+    $("#bootFill").style.width = "100%";
+    $("#bootMsg").textContent = msgs[msgs.length - 1];
+    boot.classList.add("done");
+    setTimeout(() => boot.remove(), 650);
+  };
+  boot.addEventListener("click", done);
+  setTimeout(done, total + 3500); // garantia: nunca trava na carga
+  const step = (now) => {
+    if (finished) return;
+    const k = Math.min(1, (now - t0) / total);
+    $("#bootFill").style.width = Math.round(k * (loaded ? 100 : 92)) + "%";
+    $("#bootMsg").textContent = msgs[Math.min(msgs.length - 2, Math.floor(k * (msgs.length - 1)))];
+    if (k >= 1 && loaded) done(); else requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
 }
 
 function init() {
@@ -987,10 +1253,18 @@ function init() {
   }));
   $("#startBtn").addEventListener("click", beginGame);
   $("#shopBtn").addEventListener("click", () => openShop(false));
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && game.shopOpen) closeShop(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { if (game.shopOpen) closeShop(); else closeGuide(); } });
   window.addEventListener("resize", updateCellSize);
   setInterval(tick, 250);
+  document.addEventListener("click", (e) => { if (e.target.closest("button:not(#muteBtn)")) sfx.play("click"); }, true);
+  const mb = $("#muteBtn");
+  const paintMute = () => { mb.textContent = sfx.on ? "🔊" : "🔇"; mb.setAttribute("aria-pressed", String(!sfx.on)); };
+  paintMute();
+  mb.addEventListener("click", () => { sfx.toggle(); paintMute(); });
+  $("#guideBtn").addEventListener("click", openGuide);
+  $("#startGuide").addEventListener("click", openGuide);
   showStart();
+  runBoot();
 }
 
 init();

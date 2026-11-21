@@ -13,9 +13,21 @@
 </head>
 <body>
 
+  <!-- ===== Tela de carregamento ===== -->
+  <div class="boot" id="boot" role="status" aria-label="Carregando o jogo">
+    <div class="boot-inner">
+      <img class="boot-logo" src="img/logo-gato.png" alt="">
+      <div class="boot-title">TUX//FORGE</div>
+      <div class="boot-bar"><div class="boot-fill" id="bootFill"></div></div>
+      <div class="boot-msg" id="bootMsg">Ligando a CPU…</div>
+      <div class="boot-hint">toque para pular</div>
+    </div>
+  </div>
+
   <!-- ===== Tela inicial ===== -->
   <section class="start" id="start" aria-label="Início do jogo">
     <i class="spark s1"></i><i class="spark s2 alt"></i><i class="spark s3"></i><i class="spark s4 alt"></i><i class="spark s5"></i>
+    <button class="btn ghost small start-guide" id="startGuide" type="button">📖 Guia dos termos</button>
     <div class="start-inner">
       <span class="start-logo"><img src="img/logo-gato.png" alt="Logo TuxForge: gatinho-espírito brilhando entre fitas" width="400" height="400"></span>
       <h1 class="title">
@@ -51,6 +63,7 @@
     </div>
     <div class="level-pill" id="levelPill">Nível 1</div>
     <div class="top-right">
+      <button class="btn ghost small" id="guideBtn" type="button" title="Explicação dos termos e dicas">📖 Guia</button>
       <button class="btn shop-btn" id="shopBtn" type="button" title="Abrir a loja de peças">
         🛒 Loja <span class="badge" id="shopBadge" hidden>0</span>
       </button>
@@ -78,7 +91,7 @@
 
     <section class="panel board-panel" aria-label="Cruzadinha">
       <div class="hudbar">
-        <strong id="counter">0 de 0 palavras</strong>
+        <div class="hud-left"><strong id="counter">0 de 0 palavras</strong><span id="combo" class="combo" hidden></span></div>
         <div class="hud-timer" title="Quanto mais rápido você acerta, mais a palavra paga e melhores peças libera">
           <div class="meter" aria-hidden="true"><div class="meter-fill" id="timerFill"></div></div>
           <span class="tier-line">Próxima: <b id="timerTier">Ouro</b> <span id="timerPay"></span></span>
@@ -106,6 +119,8 @@
         <div>
           <span class="hud-label">Seu computador</span>
           <strong id="rankName">—</strong>
+          <small class="rank-next" id="rankNext"></small>
+          <div class="rank-progress"><i id="rankFill"></i></div>
         </div>
         <div class="score"><span id="score">0</span><small>pts</small></div>
       </div>
@@ -132,6 +147,8 @@
       <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="1.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
     </defs>
   </svg>
+
+  <button class="mute" id="muteBtn" type="button" aria-label="Ligar ou desligar o som" title="Som ligado/desligado">🔊</button>
 
   <div class="overlay" id="overlay" hidden></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
