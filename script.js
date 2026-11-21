@@ -30,6 +30,8 @@ const game = {
   money: ECONOMY.inicial,
   installed: {}, // slotId -> partId
   solvedTotal: 0,
+  skipUsed: [], // perguntas difíceis já sorteadas
+  skipUntil: 0, // até quando o botão de pular fica bloqueado (depois de errar)
   access: 1, // maior tier de peças liberado na loja (1 Bronze, 2 Prata, 3 Ouro): fica para sempre
   newUnlock: false, // liberou um tier novo e ainda não abriu a loja
   shopThen: null, // o que fazer ao fechar a loja (ex.: voltar à tela de fim de nível)
@@ -527,6 +529,67 @@ function askReset() {
   });
 }
 
+/* =========================================================
+   Pular de nível: só vale se acertar uma pergunta muito difícil
+   ========================================================= */
+const isLastLevel = () => game.levelIndex === LEVELS.length - 1;
+const skipLabel = () => (isLastLevel() ? "⏭ Pular para o final" : "⏭ Pular nível");
+
+function askSkip() {
+  if (game.paused) return;
+  const wait = Math.ceil((game.skipUntil - performance.now()) / 1000);
+  if (wait > 0) { toast(`Você errou o desafio. Tente de novo em ${wait} s.`, true); return; }
+  const last = isLastLevel();
+  const m = showModal(`
+    <div class="modal-tag warn">Desafio</div>
+    <h2>${last ? "Pular para o final?" : "Pular para o próximo nível?"}</h2>
+    <p>Responda a <b>uma pergunta muito difícil</b>. Se acertar, ${last ? "o jogo termina e mostra o seu resultado" : "você vai direto para o próximo nível"}. As palavras que faltam aqui <b>não rendem dinheiro</b>.</p>
+    <p>Se errar, você continua neste nível e só pode tentar de novo depois de <b>${SKIP.espera} s</b>.</p>
+    <div class="btn-row">
+      <button class="btn ghost" id="no" data-autofocus type="button">Cancelar</button>
+      <button class="btn primary" id="yes" type="button">Aceitar o desafio</button>
+    </div>`);
+  $("#no", m).addEventListener("click", () => { hideModal(false); afterModal(); });
+  $("#yes", m).addEventListener("click", showSkipQuestion);
+}
+
+function showSkipQuestion() {
+  let pool = HARD_QUESTIONS.map((_, i) => i).filter((i) => !game.skipUsed.includes(i));
+  if (!pool.length) { game.skipUsed = []; pool = HARD_QUESTIONS.map((_, i) => i); }
+  const idx = pool[Math.floor(Math.random() * pool.length)];
+  game.skipUsed.push(idx); // a pergunta sorteada não volta tão cedo
+  const q = HARD_QUESTIONS[idx];
+  const opts = shuffle(q.options.map((text, i) => ({ text, right: i === q.correct })));
+  const last = isLastLevel();
+  const m = showModal(`
+    <div class="modal-tag warn">🔥 Desafio muito difícil</div>
+    <h2 style="font-size:1.2rem">${q.q}</h2>
+    <div class="opts">${opts.map((o, i) => `<button class="opt" data-i="${i}" type="button">${o.text}</button>`).join("")}</div>
+    <div id="fb"></div>`);
+  m.querySelectorAll(".opt").forEach((b) => b.addEventListener("click", () => {
+    const right = opts[Number(b.dataset.i)].right;
+    m.querySelectorAll(".opt").forEach((x, i) => {
+      x.disabled = true;
+      if (opts[i].right) x.classList.add("right");
+      else if (x === b) x.classList.add("wrongopt");
+    });
+    if (right) {
+      $("#fb", m).innerHTML = `
+        <div class="explain good"><b>Acertou! Desafio vencido.</b><br>${q.explain}</div>
+        <button class="btn primary" id="go2" data-autofocus type="button">${last ? "Ver resultado final →" : "Ir para o próximo nível →"}</button>`;
+      $("#go2", m).focus();
+      $("#go2", m).addEventListener("click", () => (last ? showFinal() : startLevel(game.levelIndex + 1)));
+    } else {
+      game.skipUntil = performance.now() + SKIP.espera * 1000;
+      $("#fb", m).innerHTML = `
+        <div class="explain bad"><b>Errou. Você continua neste nível.</b> Dá para tentar de novo em ${SKIP.espera} s.<br>${q.explain}</div>
+        <button class="btn primary" id="back" data-autofocus type="button">Voltar ao jogo</button>`;
+      $("#back", m).focus();
+      $("#back", m).addEventListener("click", () => { hideModal(false); afterModal(); });
+    }
+  }, { once: true }));
+}
+
 function restoreSnapshot() {
   const s = game.snapshot;
   game.money = s.money;
@@ -570,6 +633,8 @@ function newGame() {
   game.solvedTotal = 0;
   game.access = 1;
   game.newUnlock = false;
+  game.skipUsed = [];
+  game.skipUntil = 0;
   game.shopSlot = "cpu";
   startLevel(0);
 }
@@ -871,6 +936,7 @@ function updateHud() {
   const L = game.L;
   $("#counter").textContent = `${L.solvedCount} de ${L.words.length} palavras`;
   $("#total").textContent = `${game.solvedTotal} de ${TOTAL_WORDS}`;
+  $("#skipBtn").textContent = skipLabel();
   $("#levelPill").textContent = `Nível ${L.def.id} · ${L.def.nome} · ${L.def.dificuldade}`;
 }
 
@@ -895,6 +961,9 @@ function tick() {
   const tt = $("#timerTier");
   tt.textContent = TIERS[tier].nome;
   tt.className = "t" + tier;
+  const wait = Math.ceil((game.skipUntil - performance.now()) / 1000);
+  $("#skipBtn").disabled = wait > 0;
+  $("#skipBtn").textContent = wait > 0 ? `⏭ Pular (${wait} s)` : skipLabel();
   $("#timerPay").textContent = "· +" + fmt(Math.round((ECONOMY.renda[tier] * (L.def.mult || 1)) / 10) * 10);
   $("#timerText").textContent = `${Math.floor(t)} s desde o último acerto${game.paused ? " (pausado)" : ""}`;
 }
@@ -903,6 +972,7 @@ function init() {
   $("#checkBtn").addEventListener("click", conferir);
   $("#hintBtn").addEventListener("click", useHint);
   $("#resetBtn").addEventListener("click", askReset);
+  $("#skipBtn").addEventListener("click", askSkip);
   $("#newGameBtn").addEventListener("click", askNewGame);
   $("#brandLogo").innerHTML = logoSvg("brand-svg");
   $("#startLogo").innerHTML = logoSvg("start-svg");
