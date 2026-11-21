@@ -199,8 +199,9 @@ function renderPC() {
   const rank = rankFor(score);
   $("#score").textContent = score;
   $("#rankName").textContent = `${rank.emoji} ${rank.nome}`;
+  $("#rankName").title = rank.frase;
   const next = RANKS.find((r) => r.min > score);
-  $("#rankNext").textContent = next ? `faltam ${next.min - score} pts para ${next.emoji} ${next.nome}` : "título máximo!";
+  $("#rankNext").textContent = (next ? `faltam ${next.min - score} pts para ${next.emoji} ${next.nome}` : "título máximo!") + " · ver títulos ›";
   $("#rankFill").style.width = (next ? Math.round(((score - rank.min) / (next.min - rank.min)) * 100) : 100) + "%";
   $("#specs").innerHTML = SLOTS.map((sl) => {
     const p = game.installed[sl.id] ? partById[game.installed[sl.id]] : null;
@@ -1086,6 +1087,7 @@ function showLevelComplete() {
       <div class="stat"><b>${fmt(game.money)}</b><small>Saldo</small></div>
       <div class="stat"><b>${score}</b><small>Pontos do PC</small></div>
     </div>
+    <p class="rank-quip"><b>${rankFor(score).emoji} ${rankFor(score).nome}</b><br>“${rankFor(score).frase}”</p>
     <div class="final-pc">${pcSvg()}</div>
     <div class="btn-row"><button class="btn ghost" id="spend" type="button">🛒 Gastar dinheiro</button><button class="btn primary" id="go" data-autofocus type="button">${last ? "Ver resultado final →" : "Próximo nível →"}</button></div>`);
   $("#spend", m).addEventListener("click", () => openShop(true, showLevelComplete));
@@ -1106,6 +1108,7 @@ function showFinal() {
   const m = showModal(`
     <div class="modal-tag">🏁 PC forjado</div>
     <div class="rank-big"><span class="em">${rank.emoji}</span>${rank.nome}</div>
+    <p class="rank-quip">“${rank.frase}”</p>
     <div class="final-pc">${pcSvg()}</div>
     <div class="stats">
       <div class="stat"><b>${game.solvedTotal}/${TOTAL_WORDS}</b><small>Palavras</small></div>
@@ -1166,10 +1169,10 @@ function tick() {
    ========================================================= */
 const letrasDe = Object.fromEntries(LEVELS.flatMap((l) => l.words).map((w) => [w.id, w.answer.length]));
 
-function openGuide() {
+function openGuide(tab) {
   if (game.paused && !document.querySelector(".guide")) return; // outra janela já está aberta
   ach.give("guide");
-  const st = { tab: "termos", cat: "Todos" };
+  const st = { tab: typeof tab === "string" ? tab : "termos", cat: "Todos" };
   const cats = ["Todos", ...new Set(GUIDE.map((g) => g.cat))];
   const m = showModal(`<div class="guide"></div>`, "guide-modal");
 
@@ -1186,13 +1189,20 @@ function openGuide() {
           </article>`).join("")}</div>`;
     } else if (st.tab === "dicas") {
       body = `<div class="tips">${TIPS.map((t, i) => `<div class="tip"><span class="n">${i + 1}</span><div><b>${t.t}</b><p>${t.d}</p></div></div>`).join("")}</div>`;
+    } else if (st.tab === "titulos") {
+      const score = computeScore(), cur = rankFor(score);
+      body = `<p class="rank-intro">Seu PC tem <b>${score} pts</b>. Cada peça soma pontos: as Bronze valem pouco, as Prata valem bem mais e as Ouro valem muito. O título muda conforme o total.</p>
+        <div class="ranks">${RANKS.map((r) => {
+          const here = r === cur, locked = r.min > score;
+          return `<div class="rk${here ? " here" : ""}${locked ? " locked" : ""}"><span class="em">${r.emoji}</span><div><b>${r.nome}</b><p>“${r.frase}”</p></div><span class="pts">${here ? "você está aqui" : locked ? `a partir de ${r.min} pts` : `✓ ${r.min}+ pts`}</span></div>`;
+        }).join("")}</div>`;
     } else {
       body = `<div class="achs">${ACHIEVEMENTS.map((a) => `<div class="ach${ach.has(a.id) ? " on" : ""}"><span class="ic">${ach.has(a.id) ? a.icone : "🔒"}</span><div><b>${a.nome}</b><p>${a.desc}</p></div></div>`).join("")}</div>`;
     }
     const tab = (id, label) => `<button class="gtab${st.tab === id ? " sel" : ""}" data-tab="${id}" type="button">${label}</button>`;
     $(".guide", m).innerHTML = `
       <div class="guide-top"><div><div class="modal-tag q">Guia</div><h2>Guia dos termos</h2></div><button class="icon-btn" id="guideClose" type="button" aria-label="Fechar o guia">✕</button></div>
-      <div class="gtabs">${tab("termos", "📚 Termos")}${tab("dicas", "🧭 Como atacar")}${tab("conquistas", `🏆 Conquistas ${ach.count()}/${ACHIEVEMENTS.length}`)}</div>
+      <div class="gtabs">${tab("termos", "📚 Termos")}${tab("dicas", "🧭 Como atacar")}${tab("titulos", "🏅 Títulos do PC")}${tab("conquistas", `🏆 Conquistas ${ach.count()}/${ACHIEVEMENTS.length}`)}</div>
       <div class="guide-body">${body}</div>`;
   };
   draw();
@@ -1261,8 +1271,12 @@ function init() {
   const paintMute = () => { mb.textContent = sfx.on ? "🔊" : "🔇"; mb.setAttribute("aria-pressed", String(!sfx.on)); };
   paintMute();
   mb.addEventListener("click", () => { sfx.toggle(); paintMute(); });
-  $("#guideBtn").addEventListener("click", openGuide);
-  $("#startGuide").addEventListener("click", openGuide);
+  $("#guideBtn").addEventListener("click", () => openGuide());
+  $("#startGuide").addEventListener("click", () => openGuide());
+  const rankBox = $("#rankName").parentElement; // clicar no título do PC abre a lista de títulos
+  rankBox.classList.add("rank-link");
+  rankBox.title = "Ver todos os títulos do PC";
+  rankBox.addEventListener("click", () => openGuide("titulos"));
   showStart();
   runBoot();
 }
