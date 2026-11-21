@@ -328,14 +328,16 @@ const PARTS = [
   { id: "cool3", slot: "cooler", tier: 3, nome: "EK-Quantum Velocity² (loop custom)", curto: "EK loop", price: 1800, power: 15 },
 ];
 
-/* ---------- Ranking final (pela soma de power; máximo = 365, mas com a renda do jogo o melhor possível é ~281) ---------- */
+/* ---------- Títulos do PC (pela soma de power; máximo = 365, mas com a renda do jogo o melhor possível é ~281) ----------
+   Um PC todo Bronze faz 63 pontos; todo Prata faz 174. Os de baixo vêm com uma frase de zoeira. */
 const RANKS = [
-  { min: 0, nome: "Calculadora de bolso", emoji: "🧮" },
-  { min: 40, nome: "PC de escritório", emoji: "🖥️" },
-  { min: 90, nome: "PC gamer de entrada", emoji: "🎮" },
-  { min: 150, nome: "Estação de trabalho", emoji: "⚙️" },
-  { min: 215, nome: "PC gamer ultra", emoji: "🔥" },
-  { min: 270, nome: "Supercomputador", emoji: "🚀" },
+  { min: 0, nome: "Caixa de papelão", emoji: "📦", frase: "Dá para guardar sapato. Computar, nem tanto." },
+  { min: 10, nome: "Torradeira com Wi-Fi", emoji: "🍞", frase: "Liga, esquenta, mas só faz torrada." },
+  { min: 35, nome: "PC de lan house de 2005", emoji: "🕹️", frase: "Cheira a salgadinho e roda Counter-Strike no limite." },
+  { min: 60, nome: "PC de escritório", emoji: "🖥️", frase: "Abre a planilha e dá tempo de tomar um café." },
+  { min: 95, nome: "PC gamer", emoji: "🎮", frase: "Roda quase tudo bem. O \"quase\" é o que dói." },
+  { min: 200, nome: "PC gamer ultra", emoji: "🔥", frase: "As ventoinhas iluminam mais que a sala." },
+  { min: 270, nome: "Supercomputador", emoji: "🛰️", frase: "A NASA ligou perguntando a receita." },
 ];
 
 /* ---------- Desafio para pular de nível ----------
