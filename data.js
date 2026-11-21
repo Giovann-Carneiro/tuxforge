@@ -197,7 +197,7 @@ const LEVELS = [
     reveal: "first",
     tempoRapido: 45,
     tempoMedio: 100,
-    custoDica: 150,
+    custoDica: 300,
     penalidade: 0,
     mult: 1,
     rows: 4,
@@ -219,9 +219,9 @@ const LEVELS = [
     reveal: "none",
     tempoRapido: 40,
     tempoMedio: 100,
-    custoDica: 300,
-    penalidade: 250,
-    mult: 1.5,
+    custoDica: 600,
+    penalidade: 400,
+    mult: 1.4,
     rows: 7,
     cols: 11,
     words: [
@@ -240,9 +240,9 @@ const LEVELS = [
     reveal: "none",
     tempoRapido: 45,
     tempoMedio: 110,
-    custoDica: 500,
-    penalidade: 500,
-    mult: 2,
+    custoDica: 1000,
+    penalidade: 800,
+    mult: 1.8,
     rows: 13,
     cols: 16,
     words: [
@@ -262,16 +262,16 @@ const HARD = {
   reveal: "none",
   tempoRapido: 40,
   tempoMedio: 90,
-  custoDica: 500,
-  penalidade: 500,
+  custoDica: 1000,
+  penalidade: 800,
   mult: 1.5, // quem arrisca recebe 50% a mais, como o 3º nível do modo recomendado
 };
 
 /* ---------- Economia ---------- */
 const ECONOMY = {
-  inicial: 500,
-  renda: { 3: 1200, 2: 800, 1: 450 }, // por velocidade (tier), multiplicada pelo nível
-  bonusQuiz: 500, // também multiplicado pelo nível
+  inicial: 300,
+  renda: { 3: 600, 2: 400, 1: 200 }, // por velocidade (tier), multiplicada pelo nível
+  bonusQuiz: 200, // também multiplicado pelo nível
   revenda: 0.5, // ao trocar uma peça, devolve 50% do preço
 };
 
@@ -295,47 +295,47 @@ const SLOTS = [
 ];
 
 const PARTS = [
-  { id: "case1", slot: "case", tier: 1, nome: "Cooler Master MasterBox Q300L", curto: "Q300L", price: 350, power: 5 },
-  { id: "case2", slot: "case", tier: 2, nome: "NZXT H510 Flow", curto: "H510 Flow", price: 800, power: 12 },
-  { id: "case3", slot: "case", tier: 3, nome: "Lian Li O11 Dynamic EVO", curto: "O11 EVO", price: 1800, power: 20 },
+  { id: "case1", slot: "case", tier: 1, nome: "Cooler Master MasterBox Q300L", curto: "Q300L", price: 150, power: 5 },
+  { id: "case2", slot: "case", tier: 2, nome: "NZXT H510 Flow", curto: "H510 Flow", price: 600, power: 12 },
+  { id: "case3", slot: "case", tier: 3, nome: "Lian Li O11 Dynamic EVO", curto: "O11 EVO", price: 2200, power: 20 },
 
-  { id: "mobo1", slot: "mobo", tier: 1, nome: "ASRock H610M-HDV", curto: "H610M", price: 450, power: 8 },
-  { id: "mobo2", slot: "mobo", tier: 2, nome: "ASUS TUF Gaming B760-Plus WiFi D4", curto: "B760", price: 1300, power: 20 },
-  { id: "mobo3", slot: "mobo", tier: 3, nome: "ASUS ROG Maximus Z790 Hero", curto: "Z790", price: 3500, power: 35 },
+  { id: "mobo1", slot: "mobo", tier: 1, nome: "ASRock H610M-HDV", curto: "H610M", price: 250, power: 8 },
+  { id: "mobo2", slot: "mobo", tier: 2, nome: "ASUS TUF Gaming B760-Plus WiFi D4", curto: "B760", price: 900, power: 20 },
+  { id: "mobo3", slot: "mobo", tier: 3, nome: "ASUS ROG Maximus Z790 Hero", curto: "Z790", price: 3000, power: 35 },
 
-  { id: "cpu1", slot: "cpu", tier: 1, nome: "Intel Pentium Gold G7400 (2 núcleos)", curto: "G7400", price: 450, power: 15 },
-  { id: "cpu2", slot: "cpu", tier: 2, nome: "Intel Core i3-12100F (4 núcleos)", curto: "i3-12100F", price: 1100, power: 40 },
-  { id: "cpu3", slot: "cpu", tier: 3, nome: "Intel Core i9-14900K (24 núcleos)", curto: "i9-14900K", price: 3800, power: 90 },
+  { id: "cpu1", slot: "cpu", tier: 1, nome: "Intel Pentium Gold G7400 (2 núcleos)", curto: "G7400", price: 300, power: 15 },
+  { id: "cpu2", slot: "cpu", tier: 2, nome: "Intel Core i3-12100F (4 núcleos)", curto: "i3-12100F", price: 1000, power: 40 },
+  { id: "cpu3", slot: "cpu", tier: 3, nome: "Intel Core i9-14900K (24 núcleos)", curto: "i9-14900K", price: 4500, power: 90 },
 
-  { id: "ram1", slot: "ram", tier: 1, nome: "Kingston Fury Beast 8 GB DDR4", curto: "8 GB", price: 200, power: 10 },
-  { id: "ram2", slot: "ram", tier: 2, nome: "Corsair Vengeance RGB 64 GB DDR5", curto: "64 GB", price: 1500, power: 30 },
-  { id: "ram3", slot: "ram", tier: 3, nome: "Kit RAM 1 TB DDR5 RDIMM (8×128 GB)", curto: "1 TB", price: 6000, power: 70 },
+  { id: "ram1", slot: "ram", tier: 1, nome: "Kingston Fury Beast 8 GB DDR4", curto: "8 GB", price: 150, power: 10 },
+  { id: "ram2", slot: "ram", tier: 2, nome: "Corsair Vengeance RGB 64 GB DDR5", curto: "64 GB", price: 900, power: 30 },
+  { id: "ram3", slot: "ram", tier: 3, nome: "Kit RAM 1 TB DDR5 RDIMM (8×128 GB)", curto: "1 TB", price: 5500, power: 70 },
 
-  { id: "sto1", slot: "storage", tier: 1, nome: "Seagate BarraCuda 500 GB (HD)", curto: "500 GB", price: 250, power: 6 },
-  { id: "sto2", slot: "storage", tier: 2, nome: "Samsung 980 PRO 1 TB (NVMe)", curto: "1 TB", price: 900, power: 18 },
-  { id: "sto3", slot: "storage", tier: 3, nome: "Sabrent Rocket 4 Plus 8 TB (NVMe)", curto: "8 TB", price: 3200, power: 35 },
+  { id: "sto1", slot: "storage", tier: 1, nome: "Seagate BarraCuda 500 GB (HD)", curto: "500 GB", price: 150, power: 6 },
+  { id: "sto2", slot: "storage", tier: 2, nome: "Samsung 980 PRO 1 TB (NVMe)", curto: "1 TB", price: 600, power: 18 },
+  { id: "sto3", slot: "storage", tier: 3, nome: "Sabrent Rocket 4 Plus 8 TB (NVMe)", curto: "8 TB", price: 2500, power: 35 },
 
-  { id: "gpu1", slot: "gpu", tier: 1, nome: "NVIDIA GeForce GTX 1650 4 GB", curto: "GTX 1650", price: 900, power: 12 },
-  { id: "gpu2", slot: "gpu", tier: 2, nome: "AMD Radeon RX 9070 XT 16 GB", curto: "RX 9070 XT", price: 4800, power: 35 },
-  { id: "gpu3", slot: "gpu", tier: 3, nome: "NVIDIA GeForce RTX 5090 32 GB", curto: "RTX 5090", price: 14000, power: 80 },
+  { id: "gpu1", slot: "gpu", tier: 1, nome: "NVIDIA GeForce GTX 1650 4 GB", curto: "GTX 1650", price: 500, power: 12 },
+  { id: "gpu2", slot: "gpu", tier: 2, nome: "AMD Radeon RX 9070 XT 16 GB", curto: "RX 9070 XT", price: 2200, power: 35 },
+  { id: "gpu3", slot: "gpu", tier: 3, nome: "NVIDIA GeForce RTX 5090 32 GB", curto: "RTX 5090", price: 8000, power: 80 },
 
-  { id: "psu1", slot: "psu", tier: 1, nome: "Corsair CV550 550 W (80 Plus Bronze)", curto: "550 W", price: 300, power: 4 },
-  { id: "psu2", slot: "psu", tier: 2, nome: "Corsair RM750e 750 W (80 Plus Gold)", curto: "750 W", price: 800, power: 10 },
-  { id: "psu3", slot: "psu", tier: 3, nome: "Corsair AX1600i 1600 W (80 Plus Titanium)", curto: "1600 W", price: 3500, power: 20 },
+  { id: "psu1", slot: "psu", tier: 1, nome: "Corsair CV550 550 W (80 Plus Bronze)", curto: "550 W", price: 150, power: 4 },
+  { id: "psu2", slot: "psu", tier: 2, nome: "Corsair RM750e 750 W (80 Plus Gold)", curto: "750 W", price: 500, power: 10 },
+  { id: "psu3", slot: "psu", tier: 3, nome: "Corsair AX1600i 1600 W (80 Plus Titanium)", curto: "1600 W", price: 2000, power: 20 },
 
-  { id: "cool1", slot: "cooler", tier: 1, nome: "Cooler Master Hyper 212 (ar)", curto: "Hyper 212", price: 150, power: 3 },
-  { id: "cool2", slot: "cooler", tier: 2, nome: "Corsair iCUE H150i Elite 360 mm (AIO)", curto: "H150i", price: 900, power: 9 },
+  { id: "cool1", slot: "cooler", tier: 1, nome: "Cooler Master Hyper 212 (ar)", curto: "Hyper 212", price: 100, power: 3 },
+  { id: "cool2", slot: "cooler", tier: 2, nome: "Corsair iCUE H150i Elite 360 mm (AIO)", curto: "H150i", price: 500, power: 9 },
   { id: "cool3", slot: "cooler", tier: 3, nome: "EK-Quantum Velocity² (loop custom)", curto: "EK loop", price: 1800, power: 15 },
 ];
 
-/* ---------- Ranking final (pela soma de power; máximo = 365) ---------- */
+/* ---------- Ranking final (pela soma de power; máximo = 365, mas com a renda do jogo o melhor possível é ~281) ---------- */
 const RANKS = [
   { min: 0, nome: "Calculadora de bolso", emoji: "🧮" },
   { min: 40, nome: "PC de escritório", emoji: "🖥️" },
-  { min: 95, nome: "PC gamer de entrada", emoji: "🎮" },
-  { min: 170, nome: "Estação de trabalho", emoji: "⚙️" },
-  { min: 260, nome: "PC gamer ultra", emoji: "🔥" },
-  { min: 340, nome: "Supercomputador", emoji: "🚀" },
+  { min: 90, nome: "PC gamer de entrada", emoji: "🎮" },
+  { min: 150, nome: "Estação de trabalho", emoji: "⚙️" },
+  { min: 215, nome: "PC gamer ultra", emoji: "🔥" },
+  { min: 270, nome: "Supercomputador", emoji: "🚀" },
 ];
 
 /* ---------- Desafio para pular de nível ----------
@@ -446,4 +446,48 @@ const HARD_QUESTIONS = [
     correct: 0,
     explain: "O contador de programa aponta para a próxima instrução; a UC o atualiza a cada busca.",
   },
+];
+
+/* ---------- Guia dos termos ----------
+   Para cada palavra: o que é, os sinais que aparecem nas pistas e com o que não confundir. */
+const GUIDE = [
+  { id: "CPU", cat: "Dentro da CPU", resumo: "É o processador: busca, decodifica e executa as instruções dos programas. Reúne a ULA, a UC e os registradores.", sinais: ["Pistas com \"cérebro do computador\" ou \"executa as instruções dos programas\"", "Tem só 3 letras, mas é o conjunto: as partes menores são ULA e UC"], nao: "ULA e UC são partes da CPU; a CPU é o todo." },
+  { id: "ULA", cat: "Dentro da CPU", resumo: "Unidade Lógica e Aritmética: faz as contas (somar, subtrair) e as operações lógicas (AND, OR, NOT).", sinais: ["A pista fala em \"contas\", \"aritmética\" ou \"operações lógicas\""], nao: "A UC comanda; quem calcula é a ULA." },
+  { id: "UC", cat: "Dentro da CPU", resumo: "Unidade de Controle: decodifica a instrução e manda sinais para os outros circuitos saberem o que fazer.", sinais: ["Aparecem verbos como \"decodifica\", \"comanda\" ou \"coordena\"", "Só 2 letras: é a menor palavra do jogo"], nao: "A UC não calcula nada; isso é trabalho da ULA." },
+  { id: "REGISTRADORES", cat: "Dentro da CPU", resumo: "Pequenas memórias dentro da CPU, as mais rápidas de todas. Guardam os dados da instrução em andamento.", sinais: ["\"Dentro da CPU\" + \"as mais rápidas\" + \"dados imediatos\"", "Palavra longa (13 letras) ligada à CPU"], nao: "A cache fica junto da CPU e é maior; os registradores ficam dentro dela e são bem poucos." },
+  { id: "RAM", cat: "Memórias", resumo: "Memória principal: rápida e volátil (perde tudo quando falta energia). Guarda os programas e os dados em uso.", sinais: ["\"Área de trabalho\", \"programas em uso\" ou \"esvazia sem energia\"", "Se o dado some ao desligar, é RAM"], nao: "A ROM mantém os dados sem energia; a RAM não." },
+  { id: "ROM", cat: "Memórias", resumo: "Memória só de leitura, não volátil: guarda de fábrica o programa de inicialização (firmware).", sinais: ["\"De fábrica\", \"inicialização\" e \"mantém tudo mesmo sem energia\""], nao: "EEPROM e Flash também são não voláteis, mas podem ser regravadas; a ROM vem gravada." },
+  { id: "EEPROM", cat: "Memórias", resumo: "ROM apagável eletricamente: dá para regravar cada byte, sem tirar o chip do circuito.", sinais: ["\"Apagar e regravar cada byte\" e \"pulsos elétricos\"", "O \"E\" duplo lembra Electrically Erasable"], nao: "A Flash apaga por blocos; a EEPROM apaga byte a byte." },
+  { id: "FLASH", cat: "Memórias", resumo: "Memória não volátil, sem partes móveis, que apaga por blocos. Está em pendrives, cartões SD e SSDs.", sinais: ["\"Pendrives\", \"SSDs\", \"blocos\" ou \"sem partes móveis\""], nao: "O HD tem partes móveis (disco girando); a Flash não." },
+  { id: "CACHE", cat: "Memórias", resumo: "Memória pequena e muito rápida entre a CPU e a RAM. Guarda o que a CPU usa com mais frequência.", sinais: ["\"Junto da CPU\" e \"usa com mais frequência\"", "Os níveis L1, L2 e L3 são cache"], nao: "A RAM é maior e mais lenta; os registradores ficam dentro da CPU." },
+  { id: "MEMORIADEMASSA", cat: "Memórias", resumo: "Armazenamento de longo prazo e grande capacidade: HD, SSD, pendrive. Guarda sistema, programas e arquivos.", sinais: ["\"Por longo prazo\", \"HDs e SSDs\" e \"grande quantidade\"", "É uma das palavras mais longas (14 letras)"], nao: "A RAM é temporária e menor; a memória de massa mantém os dados com o computador desligado." },
+  { id: "DMA", cat: "Comunicação", resumo: "Acesso Direto à Memória: periféricos trocam dados com a RAM sem passar pela CPU, que fica livre para outras tarefas.", sinais: ["\"Periféricos\", \"sem sobrecarregar a CPU\" e \"trocam dados com a RAM\""], nao: "Os barramentos só transportam; o DMA é quem faz a transferência acontecer sem a CPU." },
+  { id: "DATABUS", cat: "Comunicação", resumo: "Barramento de dados: conjunto de fios que leva os dados entre CPU, memória e periféricos, nos dois sentidos.", sinais: ["\"Valores lidos e escritos\" e \"entre CPU e memória\"", "Bidirecional: os dados vão e voltam"], nao: "O address bus leva só endereços e em um sentido." },
+  { id: "ADDRESSBUS", cat: "Comunicação", resumo: "Barramento de endereços: a CPU informa por ele qual posição da memória quer acessar. Com n linhas há 2ⁿ endereços.", sinais: ["\"Qual posição da memória quer acessar\" e \"via de mão única\""], nao: "O data bus carrega os dados e funciona nos dois sentidos." },
+  { id: "MICROCONTROLADOR", cat: "Chips e núcleos", resumo: "Um computador completo em um só chip: CPU, memória e entradas/saídas, feito para controlar um dispositivo específico.", sinais: ["\"Minicomputador em um único chip\" e \"tarefas específicas\"", "É a maior palavra do jogo (16 letras)"], nao: "Um microprocessador comum precisa de memória e periféricos fora do chip." },
+  { id: "DUALCORE", cat: "Chips e núcleos", resumo: "Processador com dois núcleos no mesmo chip, que executam duas tarefas em paralelo.", sinais: ["\"Duas unidades de processamento completas\""], nao: "O quad core tem quatro núcleos." },
+  { id: "QUADCORE", cat: "Chips e núcleos", resumo: "Processador com quatro núcleos no mesmo chip. Ganha mais em programas que dividem o trabalho em várias tarefas.", sinais: ["\"Quatro unidades de processamento completas\""], nao: "O dual core tem dois núcleos." },
+];
+
+const TIPS = [
+  { t: "Conte as letras", d: "Cada pista mostra o número de letras. Palavras de 2 ou 3 letras são siglas: UC, ULA, CPU, RAM, ROM e DMA." },
+  { t: "Use os cruzamentos", d: "Cada letra que você descobre ajuda a palavra que cruza com ela. Comece pelas que você tem certeza." },
+  { t: "Procure a palavra-chave da pista", d: "Cada termo tem sinais típicos (veja a aba Termos): \"contas\" aponta para a ULA, \"pendrives\" para a Flash, \"mão única\" para o address bus." },
+  { t: "Compare os parecidos", d: "Volátil × não volátil (RAM × ROM), por byte × por bloco (EEPROM × Flash), um sentido × dois sentidos (address bus × data bus), dois × quatro núcleos." },
+  { t: "Acertou rápido? Ganhe mais", d: "Quanto mais rápido e sem dica, mais a palavra paga e melhores peças a loja libera. Acertos limpos seguidos dão combo de até +50%." },
+  { t: "Travou?", d: "A Dica revela uma letra (custa dinheiro). O Pular nível troca por uma pergunta bem difícil." },
+];
+
+/* ---------- Conquistas ---------- */
+const ACHIEVEMENTS = [
+  { id: "first_part", icone: "🛒", nome: "Primeira peça", desc: "Compre a sua primeira peça." },
+  { id: "lightning", icone: "⚡", nome: "Relâmpago", desc: "Acerte uma palavra em até 10 segundos, sem dica." },
+  { id: "combo5", icone: "🔥", nome: "Em chamas", desc: "Faça 5 acertos limpos seguidos." },
+  { id: "quiz5", icone: "🧠", nome: "Cabeça de gênio", desc: "Acerte 5 perguntas do quiz seguidas." },
+  { id: "clean_level", icone: "✨", nome: "Perfeição", desc: "Termine um nível sem errar e sem usar dica." },
+  { id: "skip_win", icone: "🎯", nome: "Desafiante", desc: "Vença o desafio para pular de nível." },
+  { id: "gold3", icone: "🥇", nome: "Toque de Midas", desc: "Tenha 3 peças Ouro no seu PC." },
+  { id: "full_pc", icone: "🖥️", nome: "PC completo", desc: "Preencha os 8 encaixes do computador." },
+  { id: "guide", icone: "📖", nome: "Estudioso", desc: "Abra o guia dos termos." },
+  { id: "super", icone: "🚀", nome: "Supercomputador", desc: "Termine o jogo com o título mais alto." },
 ];
