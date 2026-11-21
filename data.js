@@ -197,8 +197,9 @@ const LEVELS = [
     reveal: "first",
     tempoRapido: 45,
     tempoMedio: 100,
-    custoDica: 100,
+    custoDica: 150,
     penalidade: 0,
+    mult: 1,
     rows: 4,
     cols: 6,
     words: [
@@ -218,16 +219,17 @@ const LEVELS = [
     reveal: "none",
     tempoRapido: 40,
     tempoMedio: 100,
-    custoDica: 200,
-    penalidade: 150,
-    rows: 11,
-    cols: 7,
+    custoDica: 300,
+    penalidade: 250,
+    mult: 1.5,
+    rows: 7,
+    cols: 11,
     words: [
-      { id: "CACHE", answer: "CACHE", row: 0, col: 1, dir: "V" },
-      { id: "DATABUS", answer: "DATABUS", row: 1, col: 0, dir: "H" },
-      { id: "ADDRESSBUS", answer: "ADDRESSBUS", row: 1, col: 3, dir: "V" },
-      { id: "FLASH", answer: "FLASH", row: 6, col: 0, dir: "H" },
-      { id: "EEPROM", answer: "EEPROM", row: 4, col: 0, dir: "H" },
+      { id: "CACHE", answer: "CACHE", row: 1, col: 0, dir: "H" },
+      { id: "DATABUS", answer: "DATABUS", row: 0, col: 1, dir: "V" },
+      { id: "ADDRESSBUS", answer: "ADDRESSBUS", row: 3, col: 1, dir: "H" },
+      { id: "FLASH", answer: "FLASH", row: 0, col: 10, dir: "V" },
+      { id: "EEPROM", answer: "EEPROM", row: 0, col: 4, dir: "V" },
     ],
   },
   {
@@ -238,8 +240,9 @@ const LEVELS = [
     reveal: "none",
     tempoRapido: 45,
     tempoMedio: 110,
-    custoDica: 300,
-    penalidade: 300,
+    custoDica: 500,
+    penalidade: 500,
+    mult: 2,
     rows: 13,
     cols: 16,
     words: [
@@ -252,11 +255,23 @@ const LEVELS = [
   },
 ];
 
+/* ---------- Modo "tudo no difícil" ----------
+   Sobrescreve as regras de cada nível; os tabuleiros continuam os mesmos. */
+const HARD = {
+  dificuldade: "Difícil",
+  reveal: "none",
+  tempoRapido: 40,
+  tempoMedio: 90,
+  custoDica: 500,
+  penalidade: 500,
+  mult: 1.5, // quem arrisca recebe 50% a mais, como o 3º nível do modo recomendado
+};
+
 /* ---------- Economia ---------- */
 const ECONOMY = {
-  inicial: 200,
-  renda: { 3: 1100, 2: 700, 1: 400 }, // por velocidade (tier)
-  bonusQuiz: 500,
+  inicial: 500,
+  renda: { 3: 1200, 2: 800, 1: 450 }, // por velocidade (tier), multiplicada pelo nível
+  bonusQuiz: 500, // também multiplicado pelo nível
   revenda: 0.5, // ao trocar uma peça, devolve 50% do preço
 };
 
@@ -269,48 +284,48 @@ const TIERS = {
 /* ---------- PC: encaixes e peças ----------
    power = pontos de desempenho (benchmark). */
 const SLOTS = [
-  { id: "case", nome: "Gabinete", icone: "▣" },
-  { id: "mobo", nome: "Placa-mãe", icone: "▦" },
-  { id: "cpu", nome: "Processador", icone: "◈" },
-  { id: "ram", nome: "Memória RAM", icone: "≣" },
-  { id: "storage", nome: "Armazenamento", icone: "▤" },
-  { id: "gpu", nome: "Placa de vídeo", icone: "◧" },
-  { id: "psu", nome: "Fonte", icone: "⚡" },
-  { id: "cooler", nome: "Cooler", icone: "✲" },
+  { id: "case", nome: "Gabinete", icone: "▣", curto: "Gabinete" },
+  { id: "mobo", nome: "Placa-mãe", icone: "▦", curto: "Placa-mãe" },
+  { id: "cpu", nome: "Processador", icone: "◈", curto: "CPU" },
+  { id: "ram", nome: "Memória RAM", icone: "≣", curto: "RAM" },
+  { id: "storage", nome: "Armazenamento", icone: "▤", curto: "Armaz." },
+  { id: "gpu", nome: "Placa de vídeo", icone: "◧", curto: "GPU" },
+  { id: "psu", nome: "Fonte", icone: "⚡", curto: "Fonte" },
+  { id: "cooler", nome: "Cooler", icone: "✲", curto: "Cooler" },
 ];
 
 const PARTS = [
-  { id: "case1", slot: "case", tier: 1, nome: "Gabinete básico", curto: "Básico", price: 150, power: 5 },
-  { id: "case2", slot: "case", tier: 2, nome: "Mid tower com vidro", curto: "Vidro", price: 450, power: 12 },
-  { id: "case3", slot: "case", tier: 3, nome: "Full tower RGB", curto: "RGB", price: 1200, power: 20 },
+  { id: "case1", slot: "case", tier: 1, nome: "Cooler Master MasterBox Q300L", curto: "Q300L", price: 350, power: 5 },
+  { id: "case2", slot: "case", tier: 2, nome: "NZXT H510 Flow", curto: "H510 Flow", price: 800, power: 12 },
+  { id: "case3", slot: "case", tier: 3, nome: "Lian Li O11 Dynamic EVO", curto: "O11 EVO", price: 1800, power: 20 },
 
-  { id: "mobo1", slot: "mobo", tier: 1, nome: "Placa-mãe básica", curto: "Básica", price: 300, power: 8 },
-  { id: "mobo2", slot: "mobo", tier: 2, nome: "Placa-mãe avançada", curto: "Avançada", price: 800, power: 20 },
-  { id: "mobo3", slot: "mobo", tier: 3, nome: "Placa-mãe extreme", curto: "Extreme", price: 2000, power: 35 },
+  { id: "mobo1", slot: "mobo", tier: 1, nome: "ASRock H610M-HDV", curto: "H610M", price: 450, power: 8 },
+  { id: "mobo2", slot: "mobo", tier: 2, nome: "ASUS TUF Gaming B760-Plus WiFi D4", curto: "B760", price: 1300, power: 20 },
+  { id: "mobo3", slot: "mobo", tier: 3, nome: "ASUS ROG Maximus Z790 Hero", curto: "Z790", price: 3500, power: 35 },
 
-  { id: "cpu1", slot: "cpu", tier: 1, nome: "CPU dual core 2,4 GHz", curto: "Dual 2.4G", price: 250, power: 15 },
-  { id: "cpu2", slot: "cpu", tier: 2, nome: "CPU quad core 3,6 GHz", curto: "Quad 3.6G", price: 1000, power: 40 },
-  { id: "cpu3", slot: "cpu", tier: 3, nome: "CPU 24 núcleos 5,8 GHz", curto: "24c 5.8G", price: 3500, power: 90 },
+  { id: "cpu1", slot: "cpu", tier: 1, nome: "Intel Pentium Gold G7400 (2 núcleos)", curto: "G7400", price: 450, power: 15 },
+  { id: "cpu2", slot: "cpu", tier: 2, nome: "Intel Core i3-12100F (4 núcleos)", curto: "i3-12100F", price: 1100, power: 40 },
+  { id: "cpu3", slot: "cpu", tier: 3, nome: "Intel Core i9-14900K (24 núcleos)", curto: "i9-14900K", price: 3800, power: 90 },
 
-  { id: "ram1", slot: "ram", tier: 1, nome: "RAM 8 GB", curto: "8 GB", price: 150, power: 10 },
-  { id: "ram2", slot: "ram", tier: 2, nome: "RAM 64 GB", curto: "64 GB", price: 900, power: 30 },
-  { id: "ram3", slot: "ram", tier: 3, nome: "RAM 1 TB", curto: "1 TB", price: 4000, power: 70 },
+  { id: "ram1", slot: "ram", tier: 1, nome: "Kingston Fury Beast 8 GB DDR4", curto: "8 GB", price: 200, power: 10 },
+  { id: "ram2", slot: "ram", tier: 2, nome: "Corsair Vengeance RGB 64 GB DDR5", curto: "64 GB", price: 1500, power: 30 },
+  { id: "ram3", slot: "ram", tier: 3, nome: "Kit RAM 1 TB DDR5 RDIMM (8×128 GB)", curto: "1 TB", price: 6000, power: 70 },
 
-  { id: "sto1", slot: "storage", tier: 1, nome: "HD 500 GB", curto: "HD 500G", price: 150, power: 6 },
-  { id: "sto2", slot: "storage", tier: 2, nome: "SSD NVMe 1 TB", curto: "SSD 1T", price: 500, power: 18 },
-  { id: "sto3", slot: "storage", tier: 3, nome: "SSD NVMe 8 TB", curto: "SSD 8T", price: 1800, power: 35 },
+  { id: "sto1", slot: "storage", tier: 1, nome: "Seagate BarraCuda 500 GB (HD)", curto: "500 GB", price: 250, power: 6 },
+  { id: "sto2", slot: "storage", tier: 2, nome: "Samsung 980 PRO 1 TB (NVMe)", curto: "1 TB", price: 900, power: 18 },
+  { id: "sto3", slot: "storage", tier: 3, nome: "Sabrent Rocket 4 Plus 8 TB (NVMe)", curto: "8 TB", price: 3200, power: 35 },
 
-  { id: "gpu1", slot: "gpu", tier: 1, nome: "GPU 4 GB", curto: "4 GB", price: 400, power: 12 },
-  { id: "gpu2", slot: "gpu", tier: 2, nome: "GPU 12 GB", curto: "12 GB", price: 1500, power: 35 },
-  { id: "gpu3", slot: "gpu", tier: 3, nome: "GPU 48 GB", curto: "48 GB", price: 4500, power: 80 },
+  { id: "gpu1", slot: "gpu", tier: 1, nome: "NVIDIA GeForce GTX 1650 4 GB", curto: "GTX 1650", price: 900, power: 12 },
+  { id: "gpu2", slot: "gpu", tier: 2, nome: "AMD Radeon RX 9070 XT 16 GB", curto: "RX 9070 XT", price: 4800, power: 35 },
+  { id: "gpu3", slot: "gpu", tier: 3, nome: "NVIDIA GeForce RTX 5090 32 GB", curto: "RTX 5090", price: 14000, power: 80 },
 
-  { id: "psu1", slot: "psu", tier: 1, nome: "Fonte 300 W", curto: "300 W", price: 100, power: 4 },
-  { id: "psu2", slot: "psu", tier: 2, nome: "Fonte 650 W", curto: "650 W", price: 350, power: 10 },
-  { id: "psu3", slot: "psu", tier: 3, nome: "Fonte 1600 W", curto: "1600 W", price: 900, power: 20 },
+  { id: "psu1", slot: "psu", tier: 1, nome: "Corsair CV550 550 W (80 Plus Bronze)", curto: "550 W", price: 300, power: 4 },
+  { id: "psu2", slot: "psu", tier: 2, nome: "Corsair RM750e 750 W (80 Plus Gold)", curto: "750 W", price: 800, power: 10 },
+  { id: "psu3", slot: "psu", tier: 3, nome: "Corsair AX1600i 1600 W (80 Plus Titanium)", curto: "1600 W", price: 3500, power: 20 },
 
-  { id: "cool1", slot: "cooler", tier: 1, nome: "Cooler de fábrica", curto: "Stock", price: 60, power: 3 },
-  { id: "cool2", slot: "cooler", tier: 2, nome: "Water cooler 240 mm", curto: "Água", price: 250, power: 9 },
-  { id: "cool3", slot: "cooler", tier: 3, nome: "Refrigeração líquida custom", curto: "Custom", price: 700, power: 15 },
+  { id: "cool1", slot: "cooler", tier: 1, nome: "Cooler Master Hyper 212 (ar)", curto: "Hyper 212", price: 150, power: 3 },
+  { id: "cool2", slot: "cooler", tier: 2, nome: "Corsair iCUE H150i Elite 360 mm (AIO)", curto: "H150i", price: 900, power: 9 },
+  { id: "cool3", slot: "cooler", tier: 3, nome: "EK-Quantum Velocity² (loop custom)", curto: "EK loop", price: 1800, power: 15 },
 ];
 
 /* ---------- Ranking final (pela soma de power; máximo = 365) ---------- */
