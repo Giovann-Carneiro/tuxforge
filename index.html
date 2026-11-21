@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TuxForge — Monte seu PC</title>
   <meta name="description" content="Jogo de cruzadinha de Arquitetura Computacional: acerte as palavras, responda ao quiz e monte o seu PC.">
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="img/favicon.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Unbounded:wght@600;800;900&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
   <section class="start" id="start" aria-label="Início do jogo">
     <i class="spark s1"></i><i class="spark s2 alt"></i><i class="spark s3"></i><i class="spark s4 alt"></i><i class="spark s5"></i>
     <div class="start-inner">
-      <span class="start-logo" id="startLogo"></span>
+      <span class="start-logo"><img src="img/logo-gato.png" alt="Logo TuxForge: gatinho-espírito brilhando entre fitas" width="400" height="400"></span>
       <h1 class="title">
         <span class="t-top">TUX</span>
         <span class="t-main">FORGE</span>
@@ -46,7 +46,7 @@
   <!-- ===== Barra do topo ===== -->
   <header class="topbar">
     <div class="brand" aria-label="TuxForge">
-      <span class="brand-logo" id="brandLogo"></span>
+      <span class="brand-logo"><img src="img/logo-gato-pequeno.png" alt="" width="192" height="192"></span>
       <span class="logo">TUX<span>//</span>FORGE<i class="cursor">_</i></span>
     </div>
     <div class="level-pill" id="levelPill">Nível 1</div>
@@ -78,19 +78,12 @@
 
     <section class="panel board-panel" aria-label="Cruzadinha">
       <div class="hudbar">
-        <div class="hud-item">
-          <span class="hud-label">Palavras</span>
-          <strong id="counter">0 de 0 palavras</strong>
-        </div>
-        <div class="hud-item hud-timer">
-          <span class="hud-label">Próxima peça: <b id="timerTier">Ouro</b> <span id="timerPay"></span></span>
+        <strong id="counter">0 de 0 palavras</strong>
+        <div class="hud-timer" title="Quanto mais rápido você acerta, mais a palavra paga e melhores peças libera">
           <div class="meter" aria-hidden="true"><div class="meter-fill" id="timerFill"></div></div>
-          <small id="timerText">0 s</small>
+          <span class="tier-line">Próxima: <b id="timerTier">Ouro</b> <span id="timerPay"></span></span>
         </div>
-        <div class="hud-item">
-          <span class="hud-label">Total</span>
-          <strong id="total">0 de 16</strong>
-        </div>
+        <span id="timerText">0 s</span>
       </div>
 
       <div class="active-clue" id="activeClue" aria-live="polite">Selecione uma casa para começar.</div>
@@ -118,7 +111,6 @@
       </div>
       <div id="pcView" class="pc-view"></div>
       <ul class="specs" id="specs"></ul>
-      <button class="btn primary pc-shop" id="pcShopBtn" type="button">🛒 Abrir a loja <span class="badge" id="pcShopBadge" hidden>0</span></button>
     </aside>
   </main>
 

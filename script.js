@@ -10,6 +10,7 @@ const fmt = (n) => "R$ " + Math.round(n).toLocaleString("pt-BR");
 const slotById = Object.fromEntries(SLOTS.map((s) => [s.id, s]));
 const partById = Object.fromEntries(PARTS.map((p) => [p.id, p]));
 const TOTAL_WORDS = LEVELS.reduce((a, l) => a + l.words.length, 0);
+const TIP = "Digite nas casas e clique em Conferir. Quanto mais rápido, mais você ganha.";
 const MEDAL = { 3: "🥇", 2: "🥈", 1: "🥉" };
 const cellKey = (r, c) => r + "," + c;
 const shuffle = (arr) => {
@@ -71,7 +72,7 @@ function renderPC() {
     const p = game.installed[sl.id] ? partById[game.installed[sl.id]] : null;
     const flash = game.justInstalled === sl.id ? " flash" : "";
     const thumb = p ? partThumb(sl.id, p.tier) : `<span class="ph">${sl.icone}</span>`;
-    return `<li class="spec ${p ? "t" + p.tier : "empty"}${flash}" title="${sl.nome}: ${p ? p.nome : "vazio"}"><div class="sthumb">${thumb}</div><span class="sl">${sl.curto}</span></li>`;
+    return `<li class="spec ${p ? "t" + p.tier : "empty"}${flash}" title="${sl.nome}: ${p ? p.nome : "vazio"}"><div class="sthumb">${thumb}</div></li>`;
   }).join("");
 }
 
@@ -184,7 +185,7 @@ function loadLevel(i) {
   renderClues();
   paintSelection();
   renderAll();
-  $("#message").textContent = "";
+  $("#message").textContent = TIP;
 }
 
 function renderBoard() {
@@ -270,6 +271,7 @@ function paintSelection() {
   const cur = L.cells.get(L.cur);
   if (cur) cur.el.classList.add("cur");
   L.words.forEach((x) => x.li && x.li.classList.toggle("active", x === w));
+  if (w.li && matchMedia("(min-width: 901px)").matches) w.li.scrollIntoView({ block: "nearest" });
   $("#activeClue").innerHTML = `<b>${w.num} ${w.dir === "H" ? "→" : "↓"}</b><span>${w.clue}</span>`;
 }
 
@@ -533,6 +535,13 @@ function askReset() {
    Pular de nível: só vale se acertar uma pergunta muito difícil
    ========================================================= */
 const isLastLevel = () => game.levelIndex === LEVELS.length - 1;
+/* prêmio do pulo: uma fração do valor Prata de cada palavra que faltava */
+function skipPrize() {
+  const def = game.L.def;
+  const faltam = game.L.words.filter((w) => !w.solved).length;
+  const cada = Math.round((ECONOMY.renda[2] * (def.mult || 1) * SKIP.premio) / 10) * 10;
+  return cada * faltam;
+}
 const skipLabel = () => (isLastLevel() ? "⏭ Pular para o final" : "⏭ Pular nível");
 
 function askSkip() {
@@ -540,11 +549,12 @@ function askSkip() {
   const wait = Math.ceil((game.skipUntil - performance.now()) / 1000);
   if (wait > 0) { toast(`Você errou o desafio. Tente de novo em ${wait} s.`, true); return; }
   const last = isLastLevel();
+  const prize = skipPrize();
   const m = showModal(`
     <div class="modal-tag warn">Desafio</div>
     <h2>${last ? "Pular para o final?" : "Pular para o próximo nível?"}</h2>
-    <p>Responda a <b>uma pergunta muito difícil</b>. Se acertar, ${last ? "o jogo termina e mostra o seu resultado" : "você vai direto para o próximo nível"}. As palavras que faltam aqui <b>não rendem dinheiro</b>.</p>
-    <p>Se errar, você continua neste nível e só pode tentar de novo depois de <b>${SKIP.espera} s</b>.</p>
+    <p>Responda a <b>uma pergunta muito difícil</b>. Se acertar, ${last ? "o jogo termina" : "você vai direto para o próximo nível"} e ganha <b>${fmt(prize)}</b>, uma parte do que as palavras que faltam pagariam.</p>
+    <p>Se errar, continua aqui e só tenta de novo depois de <b>${SKIP.espera} s</b>.</p>
     <div class="btn-row">
       <button class="btn ghost" id="no" data-autofocus type="button">Cancelar</button>
       <button class="btn primary" id="yes" type="button">Aceitar o desafio</button>
@@ -561,6 +571,7 @@ function showSkipQuestion() {
   const q = HARD_QUESTIONS[idx];
   const opts = shuffle(q.options.map((text, i) => ({ text, right: i === q.correct })));
   const last = isLastLevel();
+  const prize = skipPrize();
   const m = showModal(`
     <div class="modal-tag warn">🔥 Desafio muito difícil</div>
     <h2 style="font-size:1.2rem">${q.q}</h2>
@@ -574,8 +585,9 @@ function showSkipQuestion() {
       else if (x === b) x.classList.add("wrongopt");
     });
     if (right) {
+      addMoney(prize);
       $("#fb", m).innerHTML = `
-        <div class="explain good"><b>Acertou! Desafio vencido.</b><br>${q.explain}</div>
+        <div class="explain good"><b>Acertou! Desafio vencido: +${fmt(prize)}.</b><br>${q.explain}</div>
         <button class="btn primary" id="go2" data-autofocus type="button">${last ? "Ver resultado final →" : "Ir para o próximo nível →"}</button>`;
       $("#go2", m).focus();
       $("#go2", m).addEventListener("click", () => (last ? showFinal() : startLevel(game.levelIndex + 1)));
@@ -727,8 +739,10 @@ function bestSlotToUpgrade() {
 /* o número no botão é quantos encaixes você pode melhorar com o saldo de agora */
 function updateShopBadge() {
   const n = upgradableSlots().length;
-  ["#shopBadge", "#pcShopBadge"].forEach((sel) => { const b = $(sel); b.hidden = !n; b.textContent = n; });
-  ["#shopBtn", "#pcShopBtn"].forEach((sel) => $(sel).classList.toggle("glow", game.newUnlock));
+  const badge = $("#shopBadge");
+  badge.hidden = !n;
+  badge.textContent = n;
+  $("#shopBtn").classList.toggle("glow", game.newUnlock);
 }
 
 /* atualiza o selo da loja e, se a janela estiver aberta, o conteúdo dela */
@@ -827,7 +841,7 @@ function renderShopModal() {
       <div class="shop-right">
         <div class="shop-pc">${pcSvg(game.installed, game.justInstalled)}</div>
         <div class="shop-rank"><b>${rank.emoji} ${rank.nome}</b><span>${score} pts</span></div>
-        <p class="shop-note">A loja fica sempre aberta no botão 🛒 do topo. Seu dinheiro fica guardado até você decidir gastar.</p>
+        <p class="shop-note">Seu dinheiro fica guardado até você decidir gastar.</p>
         <button class="btn primary" id="shopDone" data-autofocus type="button">${game.shopBought ? "Voltar ao jogo" : "Comprar depois"}</button>
       </div>
     </div>`;
@@ -854,26 +868,21 @@ function buyPart(id) {
 function showLevelIntro() {
   const def = game.L.def;
   const first = game.levelIndex === 0 && game.solvedTotal === 0 && Object.keys(game.installed).length === 0;
+  const pay = (n) => fmt(Math.round((n * def.mult) / 10) * 10);
   const rules = `
     <ul class="rules">
-      <li>🛒 <span>A loja fica <b>sempre aberta</b>: compre quando quiser. Acertar rápido libera peças melhores</span></li>
-      <li>💰 <span>Cada palavra paga de <b>${fmt(Math.round((ECONOMY.renda[1] * def.mult) / 10) * 10)}</b> (Bronze) a <b>${fmt(Math.round((ECONOMY.renda[3] * def.mult) / 10) * 10)}</b> (Ouro), mais <b>${fmt(Math.round((ECONOMY.bonusQuiz * def.mult) / 10) * 10)}</b> se acertar o quiz</span></li>
-      <li>🥇 <span><b>Ouro:</b> até ${def.tempoRapido} s desde o último acerto, sem dica</span></li>
-      <li>🥈 <span><b>Prata:</b> até ${def.tempoMedio} s</span></li>
-      <li>🥉 <span><b>Bronze:</b> mais lento que isso, ou com dica</span></li>
-      <li>💡 <span>Cada dica custa <b>${fmt(def.custoDica)}</b> e rebaixa a peça para Bronze</span></li>
-      ${def.penalidade ? `<li>⚠️ <span>Palavra errada no Conferir: <b>−${fmt(def.penalidade)}</b></span></li>` : `<li>🟢 <span>Neste nível, errar no Conferir não custa dinheiro</span></li>`}
-      <li>🔤 <span>${def.reveal === "first" ? "A primeira letra das palavras maiores já vem revelada" : "O tabuleiro começa vazio, sem letras de ajuda"}</span></li>
+      <li>💰 <span>Cada palavra paga de <b>${pay(ECONOMY.renda[1])}</b> a <b>${pay(ECONOMY.renda[3])}</b>, mais <b>${pay(ECONOMY.bonusQuiz)}</b> se acertar o quiz</span></li>
+      <li>⏱ <span>🥇 Ouro até <b>${def.tempoRapido} s</b> · 🥈 Prata até <b>${def.tempoMedio} s</b> · 🥉 Bronze: mais lento ou com dica</span></li>
+      <li>💡 <span>Dica <b>${fmt(def.custoDica)}</b> · ${def.penalidade ? `erro no Conferir <b>−${fmt(def.penalidade)}</b>` : "errar no Conferir não custa nada"}</span></li>
+      <li>🛒 <span>A loja fica sempre aberta. Acertar rápido libera peças melhores</span></li>
     </ul>`;
-  const welcome = first ? `
-    <p>Acerte as palavras da cruzadinha, leia a descrição, responda ao quiz e <b>monte o seu PC</b>. Quanto mais rápido você acerta, melhores as peças que pode escolher. Mas o dinheiro é limitado!</p>` : "";
   const m = showModal(`
     <div class="modal-tag q">Nível ${def.id} de ${LEVELS.length}</div>
     <h2>${def.nome} <span class="diff ${def.dificuldade}">${def.dificuldade}</span></h2>
     ${game.mode === "dificil" ? '<p style="color:var(--bad);margin:0 0 6px">🔥 Modo tudo no difícil: recompensas 50% maiores.</p>' : ""}
     <p style="color:var(--muted)">${def.sub}</p>
-    ${welcome}${rules}
-    <button class="btn primary" id="go" data-autofocus type="button">${first ? "Ligar o PC e começar" : "Começar nível"}</button>`);
+    ${rules}
+    <button class="btn primary" id="go" data-autofocus type="button">Começar</button>`);
   $("#go", m).addEventListener("click", () => {
     hideModal(true);
     focusWord(game.L.words[0]);
@@ -935,9 +944,8 @@ function showFinal() {
 function updateHud() {
   const L = game.L;
   $("#counter").textContent = `${L.solvedCount} de ${L.words.length} palavras`;
-  $("#total").textContent = `${game.solvedTotal} de ${TOTAL_WORDS}`;
   $("#skipBtn").textContent = skipLabel();
-  $("#levelPill").textContent = `Nível ${L.def.id} · ${L.def.nome} · ${L.def.dificuldade}`;
+  $("#levelPill").textContent = `Nível ${L.def.id}/${LEVELS.length} · ${L.def.dificuldade}`;
 }
 
 function renderAll() {
@@ -965,7 +973,7 @@ function tick() {
   $("#skipBtn").disabled = wait > 0;
   $("#skipBtn").textContent = wait > 0 ? `⏭ Pular (${wait} s)` : skipLabel();
   $("#timerPay").textContent = "· +" + fmt(Math.round((ECONOMY.renda[tier] * (L.def.mult || 1)) / 10) * 10);
-  $("#timerText").textContent = `${Math.floor(t)} s desde o último acerto${game.paused ? " (pausado)" : ""}`;
+  $("#timerText").textContent = `${Math.floor(t)} s${game.paused ? " ⏸" : ""}`;
 }
 
 function init() {
@@ -974,14 +982,11 @@ function init() {
   $("#resetBtn").addEventListener("click", askReset);
   $("#skipBtn").addEventListener("click", askSkip);
   $("#newGameBtn").addEventListener("click", askNewGame);
-  $("#brandLogo").innerHTML = logoSvg("brand-svg");
-  $("#startLogo").innerHTML = logoSvg("start-svg");
   document.querySelectorAll(".mode").forEach((btn) => btn.addEventListener("click", () => {
     document.querySelectorAll(".mode").forEach((x) => { x.classList.toggle("sel", x === btn); x.setAttribute("aria-checked", x === btn); });
   }));
   $("#startBtn").addEventListener("click", beginGame);
   $("#shopBtn").addEventListener("click", () => openShop(false));
-  $("#pcShopBtn").addEventListener("click", () => openShop(false));
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && game.shopOpen) closeShop(); });
   window.addEventListener("resize", updateCellSize);
   setInterval(tick, 250);
