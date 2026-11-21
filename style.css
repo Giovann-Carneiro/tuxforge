@@ -590,3 +590,99 @@ body::before {
 }
 
 .spec .pn { white-space: normal; font-size: 0.74rem; line-height: 1.15; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* =========================================================
+   LAYOUT 3: tudo na altura da tela, sem rolar
+   [ pistas | cruzadinha | seu PC ]
+   ========================================================= */
+:root { --top: 64px; }
+body { overflow: hidden; }
+.topbar { height: var(--top); padding-top: 0; padding-bottom: 0; }
+.layout {
+  display: grid; grid-template-columns: clamp(200px, 20vw, 270px) minmax(0, 1fr) clamp(250px, 27vw, 350px); grid-template-areas: "clues board pc";
+  gap: clamp(12px, 1.6vw, 20px); max-width: 1560px; margin: 0 auto; padding: 14px clamp(12px, 1.6vw, 20px) 16px;
+  height: calc(100vh - var(--top)); align-items: stretch;
+}
+.layout > .panel { min-height: 0; }
+.clues { grid-area: clues; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; grid-template-columns: none; scrollbar-width: thin; scrollbar-color: #5a2d93 transparent; }
+.clue-col li { font-size: 0.84rem; padding: 6px 8px; }
+.board-panel { grid-area: board; display: flex; flex-direction: column; }
+.pc-panel { grid-area: pc; display: flex; flex-direction: column; }
+
+.hudbar { flex: none; display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center; padding: 0 2px 10px; }
+.hudbar strong { font-family: var(--font-hd); font-size: 0.82rem; color: var(--neon); white-space: nowrap; }
+.hud-timer small { color: var(--muted); font-size: 0.74rem; }
+#timerPay { color: #ffb3ee; font-weight: 700; letter-spacing: 0; text-transform: none; }
+.active-clue { flex: none; margin-bottom: 10px; min-height: 42px; }
+.board-wrap { flex: 1; min-height: 0; display: flex; padding: 12px; overflow: auto; }
+.board { margin: auto; }
+.actions { flex: none; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px; }
+.actions .primary { flex: 0 0 auto; min-width: 160px; }
+.message { margin: 0; flex: 1; min-width: 150px; min-height: 0; font-size: 0.88rem; }
+
+.pc-head { flex: none; }
+.pc-view { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.pc-view .pc-svg { height: 100%; width: auto; max-width: 100%; }
+.specs { flex: none; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 8px 0 0; }
+.spec { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 3px 3px; }
+.spec .sthumb { width: 100%; height: 32px; border-radius: 6px; }
+.spec .sl { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.spec.t1 .sl, .spec.t2 .sl, .spec.t3 .sl { color: var(--c); }
+.pc-shop { flex: none; margin-top: 10px; }
+
+/* ---------- Tela inicial ---------- */
+.start {
+  position: fixed; inset: 0; z-index: 75; display: grid; place-items: center; padding: 20px; overflow: auto;
+  background:
+    radial-gradient(900px 520px at 50% 0%, rgba(197, 139, 255, 0.24), transparent 70%),
+    radial-gradient(700px 500px at 92% 100%, rgba(255, 91, 214, 0.15), transparent 70%),
+    linear-gradient(rgba(197, 139, 255, 0.045) 1px, transparent 1px) 0 0 / 36px 36px,
+    linear-gradient(90deg, rgba(197, 139, 255, 0.045) 1px, transparent 1px) 0 0 / 36px 36px,
+    #07020d;
+}
+.start[hidden] { display: none; }
+.start-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; text-align: center; width: min(780px, 100%); }
+.start-logo { display: block; width: 118px; margin-bottom: 4px; }
+.start-svg { width: 100%; height: auto; display: block; filter: drop-shadow(0 0 20px rgba(255, 91, 214, 0.6)); animation: floaty 3.2s ease-in-out infinite; }
+.start .title { --F: clamp(2.8rem, 10vw, 6.2rem); margin-bottom: calc(var(--F) * 0.8); }
+.start .byline { margin-bottom: 26px; }
+.start .s1 { --sz: 26px; left: 10%; top: 24%; } .start .s2 { --sz: 16px; left: 22%; bottom: 20%; }
+.start .s3 { --sz: 34px; right: 12%; top: 18%; } .start .s4 { --sz: 14px; right: 24%; bottom: 26%; } .start .s5 { --sz: 20px; left: 6%; bottom: 40%; }
+
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; margin-bottom: 24px; }
+.mode {
+  text-align: left; display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; border-radius: 12px; cursor: pointer;
+  border: 1.5px solid #4a2a7a; background: rgba(20, 8, 38, 0.82); color: var(--text); font-family: inherit;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.2s, transform 0.12s;
+}
+.mode:hover { border-color: #c58bff; transform: translateY(-2px); }
+.mode b { font-family: var(--font-hd); font-size: 0.95rem; }
+.mode span { font-size: 0.88rem; color: var(--muted); line-height: 1.4; }
+.mode em { font-style: normal; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: #ffb3ee; margin-top: auto; }
+.mode.sel { border-color: #ff5bd6; background: rgba(255, 91, 214, 0.12); box-shadow: 0 0 28px rgba(255, 91, 214, 0.32); }
+.start-btn { font-size: 1.1rem; padding: 14px 40px; }
+
+/* ---------- Telas menores: volta a rolar ---------- */
+@media (max-width: 900px) {
+  body { overflow: auto; }
+  .layout { height: auto; grid-template-columns: minmax(0, 1fr) 320px; grid-template-areas: "board pc" "clues clues"; }
+  .board-wrap { flex: none; }
+  .clues { display: grid; grid-template-columns: 1fr 1fr; overflow: visible; }
+  .pc-view { flex: none; }
+  .pc-view .pc-svg { height: auto; width: min(100%, 260px); }
+}
+@media (max-width: 760px) {
+  .layout { grid-template-columns: 1fr; grid-template-areas: "board" "clues" "pc"; padding: 12px 14px 30px; gap: 22px; }
+  .clues { grid-template-columns: 1fr; }
+  .hudbar { grid-template-columns: 1fr 1fr; }
+  .hud-timer { grid-column: 1 / -1; order: 3; }
+  .modes { grid-template-columns: 1fr; }
+  .actions .primary { flex: 1 1 100%; }
+}
+
+/* barra do topo cresce em telas pequenas (quebra em mais de uma linha) */
+@media (max-width: 900px) {
+  .topbar { height: auto; min-height: var(--top); padding-top: 8px; padding-bottom: 8px; }
+}
+
+.shop-note { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.4; }
