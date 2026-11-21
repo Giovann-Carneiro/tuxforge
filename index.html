@@ -38,20 +38,23 @@
       </h1>
       <p class="byline">monte seu pc, peça por peça</p>
 
+      <button class="btn primary start-btn" id="playBtn" type="button">▶ Jogar</button>
+
+      <div class="mode-step" id="modeStep" hidden>
+      <p class="mode-title">Escolha como quer jogar</p>
       <div class="modes" role="radiogroup" aria-label="Escolha como jogar">
         <button class="mode sel" type="button" role="radio" aria-checked="true" data-mode="recomendado">
-          <b>⭐ Recomendado</b>
-          <span>Começa fácil, com a 1ª letra de cada palavra revelada, e fica mais difícil a cada nível.</span>
-          <em>Fácil → Médio → Difícil</em>
+          <b><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8 6.6 19.7l1.1-6.1L3.2 9.4l6.1-.8z"/></svg>Recomendado</b>
+          <span>Começa fácil e vai ficando difícil.</span>
         </button>
         <button class="mode" type="button" role="radio" aria-checked="false" data-mode="dificil">
-          <b>🔥 Tudo no difícil</b>
-          <span>Os 3 níveis já com as regras mais duras: sem letras de ajuda, dicas e erros caros.</span>
-          <em>Recompensas 50% maiores</em>
+          <b><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3.2 2-4 .2 1.5 1 2.2 2 2.5C11 9 11 6 12 3z"/></svg>Tudo no difícil</b>
+          <span>Sem ajuda, mas paga 50% mais.</span>
         </button>
       </div>
 
-      <button class="btn primary start-btn" id="startBtn" type="button">▶ Iniciar jogo</button>
+      <button class="btn primary start-btn" id="startBtn" type="button">▶ Começar</button>
+      </div>
     </div>
   </section>
 

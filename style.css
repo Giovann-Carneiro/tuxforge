@@ -856,3 +856,39 @@ body::before { opacity: 0.45; animation: none; }
 .rk.here { border-color: #ff5bd6; background: rgba(255, 91, 214, 0.12); box-shadow: 0 0 20px rgba(255, 91, 214, 0.25); }
 .rk.here .pts { color: #ffb3ee; }
 .rk.locked { opacity: 0.55; }
+
+/* ===== missão (passo antes da escolha do modo) ===== */
+.mode-step{display:flex;flex-direction:column;align-items:center;gap:clamp(6px,1.4vh,14px);width:100%}
+.mode-step[hidden]{display:none}
+.mode-title{margin:0;font-size:.85rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted,#b9a8e8)}
+#playBtn[hidden]{display:none}
+.mission-modal{max-width:640px;width:calc(100vw - 24px);max-height:calc(100vh - 24px);overflow:auto}
+.m-lead{margin:.2em 0 .8em}
+.m-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.m-step{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:12px;border:1px solid rgba(167,139,250,.35);background:rgba(124,58,237,.12);color:inherit;font:inherit;cursor:pointer;transition:transform .15s,background .15s,border-color .15s}
+.m-step span{font-size:1.6rem}
+.m-step:hover{transform:translateY(-2px)}
+.m-step.sel{background:rgba(167,139,250,.28);border-color:#c4b5fd;box-shadow:0 0 14px rgba(167,139,250,.45)}
+.m-detail{min-height:3.6em;margin:.7em 0;padding:10px 12px;border-radius:10px;background:rgba(0,0,0,.25);font-size:.92rem}
+.m-ladder{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:2px;margin:.4em 0}
+.m-rung{font-size:1.5rem;display:inline-block;animation:mRise 1.8s ease-in-out infinite;animation-delay:calc(var(--i)*.18s)}
+.m-arrow{opacity:.5;font-style:normal}
+@keyframes mRise{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.m-challenge{margin:.6em 0 1em;padding:10px 12px;border-radius:10px;border:1px dashed #f0abfc;background:rgba(240,171,252,.08);font-size:.92rem}
+@media (max-width:520px){.m-steps{grid-template-columns:1fr}.m-step{flex-direction:row;justify-content:flex-start;padding:8px 12px}}
+@media (max-height:640px){.mode-title{display:none}}
+@media (prefers-reduced-motion:reduce){.m-rung{animation:none}}
+
+/* visual mais limpo da missão (sem emojis) */
+.m-step span{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:.9rem;font-weight:700;background:#a78bfa;color:#1a0f33}
+.m-ladder{align-items:flex-end;gap:6px;height:36px}
+.m-rung{width:26px;height:calc(8px + var(--i)*4px);border-radius:4px;background:linear-gradient(#c4b5fd,#7c3aed);animation:none;opacity:.85}
+.m-rung:last-child{background:linear-gradient(#f0abfc,#c026d3);box-shadow:0 0 10px #e879f9}
+.m-arrow{display:none}
+
+/* ícones SVG no lugar dos emojis */
+.m-step span{width:34px;height:34px;background:rgba(167,139,250,.2);color:#d8c8ff;border:1px solid rgba(196,181,253,.5)}
+.m-step.sel span{background:#a78bfa;color:#1a0f33}
+.mode b{display:flex;align-items:center;gap:8px}
+.mode b svg{flex:none;color:#c4b5fd}
+.mode:last-child b svg{color:#f0abfc}

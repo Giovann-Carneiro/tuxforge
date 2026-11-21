@@ -333,7 +333,6 @@ const PARTS = [
 const RANKS = [
   { min: 0, nome: "Caixa de papelão", emoji: "📦", frase: "Dá para guardar sapato. Computar, nem tanto." },
   { min: 10, nome: "Torradeira com Wi-Fi", emoji: "🍞", frase: "Liga, esquenta, mas só faz torrada." },
-  { min: 35, nome: "PC de lan house de 2005", emoji: "🕹️", frase: "Cheira a salgadinho e roda Counter-Strike no limite." },
   { min: 60, nome: "PC de escritório", emoji: "🖥️", frase: "Abre a planilha e dá tempo de tomar um café." },
   { min: 95, nome: "PC gamer", emoji: "🎮", frase: "Roda quase tudo bem. O \"quase\" é o que dói." },
   { min: 200, nome: "PC gamer ultra", emoji: "🔥", frase: "As ventoinhas iluminam mais que a sala." },

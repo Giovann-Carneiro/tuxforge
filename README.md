@@ -43,7 +43,7 @@ A ideia: cada palavra descoberta rende **dinheiro**, uma **explicação do termo
 
 ## Como jogar
 
-1. Na tela inicial, escolha o **modo** (Recomendado ou Tudo no difícil) e clique em **Iniciar jogo**.
+1. Clique em **Jogar**, leia a **missão** (aprender, ganhar dinheiro a cada acerto e montar o PC até o título máximo), clique em *Bora!* e escolha o **modo** (Recomendado ou Tudo no difícil).
 2. **Digite as letras direto nas casas** da cruzadinha. A pista da palavra selecionada fica destacada na lista à esquerda; clicar numa pista seleciona a palavra.
 3. Clique em **✔ Conferir** (ou aperte `Enter`). Palavras certas ficam verdes e travam, as erradas ficam vermelhas, e o contador mostra o progresso, por exemplo *"4 de 6 palavras"*.
 4. A cada palavra certa aparece uma **explicação do termo** e, em seguida, um **quiz** de múltipla escolha.
@@ -104,7 +104,6 @@ A soma dos pontos das peças define o título final do computador. Os de baixo v
 |---|---|---|
 | 📦 Caixa de papelão | a partir de 0 pts | “Dá para guardar sapato. Computar, nem tanto.” |
 | 🍞 Torradeira com Wi-Fi | a partir de 10 pts | “Liga, esquenta, mas só faz torrada.” |
-| 🕹️ PC de lan house de 2005 | a partir de 35 pts | “Cheira a salgadinho e roda Counter-Strike no limite.” |
 | 🖥️ PC de escritório | a partir de 60 pts | “Abre a planilha e dá tempo de tomar um café.” |
 | 🎮 PC gamer | a partir de 95 pts | “Roda quase tudo bem. O "quase" é o que dói.” |
 | 🔥 PC gamer ultra | a partir de 200 pts | “As ventoinhas iluminam mais que a sala.” |

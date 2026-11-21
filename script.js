@@ -781,11 +781,52 @@ function askNewGame() {
 }
 
 /* ---------- tela inicial: escolha do modo ---------- */
+let missionSeen = false;
+
 function showStart() {
   game.shopOpen = false;
   $("#start").hidden = false;
   document.body.classList.add("modal-open");
+  $("#playBtn").hidden = false;
+  $("#modeStep").hidden = true;
+  $("#playBtn").focus();
+}
+
+function showModeStep() {
+  $("#playBtn").hidden = true;
+  $("#modeStep").hidden = false;
+  document.body.classList.add("modal-open");
   $(".mode.sel").focus();
+}
+
+function onPlay() {
+  if (missionSeen) showModeStep(); else openMission();
+}
+
+/* ---------- missão: o objetivo do jogo, antes de escolher o modo ---------- */
+function openMission() {
+  const steps = [
+    { ico: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5V5.5M9 8h7M9 12h5"/></svg>`, t: "Aprenda", d: "Descubra o termo pela pista e aprenda o que ele significa." },
+    { ico: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M14.8 9.2c-.4-1-1.4-1.5-2.8-1.5-1.6 0-2.7.8-2.7 2 0 3 5.6 1.4 5.6 4.3 0 1.2-1.2 2-2.9 2-1.5 0-2.6-.6-3-1.7M12 6v1.7M12 16.3V18"/></svg>`, t: "Ganhe", d: "Cada acerto vira dinheiro. Quanto mais rápido, mais paga." },
+    { ico: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8M12 16v5"/></svg>`, t: "Monte", d: "Compre peças reais e veja o PC ser montado." },
+  ];
+  const sum = PARTS.filter((p) => p.tier === 3).reduce((s, p) => s + p.price, 0);
+  const ladder = RANKS.map((r, i) => `<span class="m-rung" style="--i:${i}" title="${r.nome}"></span>`).join("");
+  const m = showModal(`
+    <div class="modal-tag">Missão</div>
+    <h2>Forje seu PC</h2>
+    <div class="m-steps">
+      ${steps.map((s, i) => `<button class="m-step${i === 0 ? " sel" : ""}" type="button" data-i="${i}"><span>${s.ico}</span><b>${s.t}</b></button>`).join("")}
+    </div>
+    <p class="m-detail" id="mDetail">${steps[0].d}</p>
+    <div class="m-ladder" aria-label="Títulos possíveis do PC">${ladder}</div>
+    <p class="m-challenge"><b>Desafio:</b> chegar a <b>${RANKS[RANKS.length - 1].nome}</b>. Dinheiro não dá para tudo (o PC top custa R$ ${sum.toLocaleString("pt-BR")}). Escolha bem. Consegue?</p>
+    <div class="btn-row"><button class="btn primary" id="missionOk" data-autofocus type="button">Bora!</button></div>`, "mission-modal");
+  m.querySelectorAll(".m-step").forEach((b) => b.addEventListener("click", () => {
+    m.querySelectorAll(".m-step").forEach((x) => x.classList.toggle("sel", x === b));
+    $("#mDetail", m).textContent = steps[+b.dataset.i].d;
+  }));
+  $("#missionOk", m).addEventListener("click", () => { missionSeen = true; hideModal(false); showModeStep(); });
 }
 
 function beginGame() {
@@ -1262,6 +1303,7 @@ function init() {
     document.querySelectorAll(".mode").forEach((x) => { x.classList.toggle("sel", x === btn); x.setAttribute("aria-checked", x === btn); });
   }));
   $("#startBtn").addEventListener("click", beginGame);
+  $("#playBtn").addEventListener("click", onPlay);
   $("#shopBtn").addEventListener("click", () => openShop(false));
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") { if (game.shopOpen) closeShop(); else closeGuide(); } });
   window.addEventListener("resize", updateCellSize);
