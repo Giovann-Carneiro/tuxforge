@@ -24,6 +24,8 @@
 
 Se travar, use **💡 Dica** (custa dinheiro e rebaixa a peça) ou **⟲ Reiniciar** para limpar o nível.
 
+Sem paciência para um nível? **⏭ Pular nível** propõe uma pergunta muito difícil: se acertar, você pula para o próximo nível (as palavras que faltam não rendem dinheiro). Se errar, continua onde está e só pode tentar de novo depois de 60 s.
+
 ## 🕹️ Modos de jogo
 
 - **⭐ Recomendado:** começa fácil e fica mais difícil a cada nível (veja abaixo).
