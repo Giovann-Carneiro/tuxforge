@@ -356,32 +356,3 @@ function pcSvg(inst = game.installed, pop = null) {
 
   return s + `</svg>`;
 }
-
-/* =========================================================
-   Logo: gatinho de olhos brilhantes (circuito nos bigodes)
-   ========================================================= */
-function logoSvg(cls = "logo-svg") {
-  const spark = (x, y, k, f) => `<path transform="translate(${x} ${y}) scale(${k})" fill="${f}" d="M0 -8 C0 -2 2 0 8 0 C2 0 0 2 0 8 C0 2 -2 0 -8 0 C-2 0 0 -2 0 -8Z"/>`;
-  const eye = (cx, cy) => `<g class="lg-eye"><circle cx="${cx}" cy="${cy}" r="15.5" fill="url(#lgEye)" filter="url(#lgGlow)"/><circle cx="${cx}" cy="${cy}" r="15.5" fill="none" stroke="#ffd0f4" stroke-opacity=".7" stroke-width="1"/><path transform="translate(${cx} ${cy + 1.5}) scale(.95)" fill="#fff3c9" d="M0 -3.4 C-3.2 -8 -10 -3 0 7 C10 -3 3.2 -8 0 -3.4Z"/><circle cx="${cx - 5.5}" cy="${cy - 6.5}" r="3.3" fill="#fff" opacity=".92"/><circle cx="${cx + 5.5}" cy="${cy + 5.5}" r="1.6" fill="#fff" opacity=".8"/></g>`;
-  return `<svg class="${cls}" viewBox="0 0 120 112" role="img" aria-label="Logo TuxForge: gatinho de olhos brilhantes">
-  <defs>
-    <linearGradient id="lgFur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#46197f"/><stop offset="1" stop-color="#150729"/></linearGradient>
-    <radialGradient id="lgEye" cx=".5" cy=".45" r=".62"><stop offset="0" stop-color="#fff0fb"/><stop offset=".38" stop-color="#ff7ae6"/><stop offset="1" stop-color="#d11fb0"/></radialGradient>
-    <filter id="lgGlow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-  </defs>
-  <path d="M13 54 L9 13 Q9 6 16 10 L45 29Z" fill="url(#lgFur)" stroke="#c58bff" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M107 54 L111 13 Q111 6 104 10 L75 29Z" fill="url(#lgFur)" stroke="#c58bff" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M19 43 L17 21 L37 33Z" fill="#ff7ad9" opacity=".8"/><path d="M101 43 L103 21 L83 33Z" fill="#ff7ad9" opacity=".8"/>
-  <path d="M60 23 C94 23 113 45 113 69 C113 93 91 106 60 106 C29 106 7 93 7 69 C7 45 26 23 60 23Z" fill="url(#lgFur)" stroke="#c58bff" stroke-width="3"/>
-  <path d="M30 40 Q60 30 90 40" stroke="#fff" stroke-opacity=".14" stroke-width="3" fill="none" stroke-linecap="round"/>
-  <rect x="53.5" y="30" width="13" height="10" rx="2.2" fill="#1a0a33" stroke="#ff7ad9" stroke-width="1.6"/><circle cx="60" cy="35" r="1.8" fill="#ff7ad9"/>
-  <path d="M51 33 H47 M51 37 H46 M69 33 H73 M69 37 H74" stroke="#ff7ad9" stroke-width="1.2" stroke-linecap="round"/>
-  <ellipse cx="22" cy="82" rx="7" ry="4" fill="#ff5bd6" opacity=".38"/><ellipse cx="98" cy="82" rx="7" ry="4" fill="#ff5bd6" opacity=".38"/>
-  ${eye(40, 66)}${eye(80, 66)}
-  <path d="M55.5 80.5 H64.5 L60 86Z" fill="#ff7ad9" stroke="#ff7ad9" stroke-width="1.6" stroke-linejoin="round"/>
-  <path d="M60 86 Q56 93 50.5 89.5 M60 86 Q64 93 69.5 89.5" stroke="#c58bff" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <path d="M28 85 H12 M28 91 L16 97 M92 85 H108 M92 91 L104 97" stroke="#c58bff" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-  <circle cx="10" cy="85" r="2.3" fill="#ff7ad9"/><circle cx="14" cy="98" r="2.3" fill="#ff7ad9"/><circle cx="110" cy="85" r="2.3" fill="#ff7ad9"/><circle cx="106" cy="98" r="2.3" fill="#ff7ad9"/>
-  ${spark(104, 12, 1.15, "#ff8ae6")}${spark(14, 17, 0.75, "#c58bff")}
-</svg>`;
-}
