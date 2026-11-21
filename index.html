@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TuxForge — Monte seu PC</title>
   <meta name="description" content="Jogo de cruzadinha de Arquitetura Computacional: acerte as palavras, responda ao quiz e monte o seu PC.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Unbounded:wght@600;800;900&display=swap" rel="stylesheet">
@@ -13,9 +14,15 @@
 <body>
 
   <header class="topbar">
-    <div class="logo" aria-label="TuxForge">TUX<span>//</span>FORGE<i class="cursor">_</i></div>
+    <div class="brand" aria-label="TuxForge">
+      <span class="brand-logo" id="brandLogo"></span>
+      <span class="logo">TUX<span>//</span>FORGE<i class="cursor">_</i></span>
+    </div>
     <div class="level-pill" id="levelPill">Nível 1</div>
     <div class="top-right">
+      <button class="btn shop-btn" id="shopBtn" type="button" title="Abrir a loja de peças">
+        🛒 Loja <span class="badge" id="shopBadge" hidden>0</span>
+      </button>
       <div class="wallet" title="Dinheiro disponível">
         <span class="wallet-label">Saldo</span>
         <strong id="money">R$ 0</strong>
@@ -24,20 +31,9 @@
     </div>
   </header>
 
-  <section class="hero" aria-label="TuxForge">
-    <i class="spark s1"></i><i class="spark s2 alt"></i><i class="spark s3"></i><i class="spark s4 alt"></i>
-    <h1 class="title">
-      <span class="t-top">TUX</span>
-      <span class="t-main">FORGE</span>
-      <span class="t-echo" aria-hidden="true">FORGE</span>
-      <span class="t-echo e2" aria-hidden="true">FORGE</span>
-    </h1>
-    <p class="byline">monte seu pc, peça por peça</p>
-  </section>
-
   <main class="layout">
 
-    <!-- ===== Coluna do jogo ===== -->
+    <!-- ===== Cruzadinha ===== -->
     <section class="game-col" aria-label="Tabuleiro">
 
       <div class="panel hud">
@@ -81,8 +77,8 @@
       </div>
     </section>
 
-    <!-- ===== Coluna do PC ===== -->
-    <aside class="side-col" aria-label="Seu computador e loja">
+    <!-- ===== Seu PC ===== -->
+    <aside class="side-col" aria-label="Seu computador">
       <div class="panel pc-panel">
         <div class="pc-head">
           <div>
@@ -93,21 +89,25 @@
         </div>
         <div id="pcView" class="pc-view"></div>
         <ul class="specs" id="specs"></ul>
+        <button class="btn primary pc-shop" id="pcShopBtn" type="button">🛒 Abrir a loja <span class="badge" id="pcShopBadge" hidden>0</span></button>
       </div>
-
-      <div class="panel shop" id="shop"></div>
     </aside>
   </main>
 
-  <!-- gradientes compartilhados pelas ilustrações das peças -->
+  <!-- gradientes e filtros compartilhados pelas ilustrações -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
     <defs>
-      <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3b27a"/><stop offset="1" stop-color="#8a4a1f"/></linearGradient>
-      <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4f8fc"/><stop offset="1" stop-color="#7d8c9b"/></linearGradient>
-      <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0a0"/><stop offset="1" stop-color="#b8860b"/></linearGradient>
+      <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd9b8"/><stop offset=".5" stop-color="#e08d4f"/><stop offset="1" stop-color="#7a3f17"/></linearGradient>
+      <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#c4d0de"/><stop offset="1" stop-color="#6f7f90"/></linearGradient>
+      <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff6bf"/><stop offset=".5" stop-color="#ffd54a"/><stop offset="1" stop-color="#a8780a"/></linearGradient>
+      <linearGradient id="gPcb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a1a6e"/><stop offset="1" stop-color="#170a2e"/></linearGradient>
+      <linearGradient id="gDark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2c1a4a"/><stop offset="1" stop-color="#0c0618"/></linearGradient>
+      <linearGradient id="gGlass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".38"/><stop offset="1" stop-color="#ffffff" stop-opacity=".02"/></linearGradient>
+      <linearGradient id="gLiquid" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff5bd6"/><stop offset="1" stop-color="#c58bff"/></linearGradient>
       <linearGradient id="rgbGrad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#ff4d8d"/><stop offset=".33" stop-color="#ffd54a"/><stop offset=".66" stop-color="#c58bff"/><stop offset="1" stop-color="#8d6bff"/>
+        <stop offset="0" stop-color="#ff4d8d"/><stop offset=".33" stop-color="#ffd54a"/><stop offset=".66" stop-color="#38f5c8"/><stop offset="1" stop-color="#8d6bff"/>
       </linearGradient>
+      <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
     </defs>
   </svg>
 

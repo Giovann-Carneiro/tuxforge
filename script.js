@@ -36,6 +36,10 @@ const game = {
   paused: false,
   pauseAt: 0,
   justInstalled: null,
+  shopOpen: false, // janela da loja aberta
+  shopFresh: false, // aberta logo depois de um acerto
+  shopBought: false, // comprou algo nesta visita
+  shopMsg: "",
 };
 
 /* =========================================================
@@ -455,18 +459,21 @@ async function conferir() {
 
   if (ok.length) {
     for (let i = 0; i < ok.length; i++) await runWordFlow(ok[i], i < ok.length - 1);
-    hideModal(true);
-    game.shopSlot = bestSlotToUpgrade();
-    renderShop();
-    if (game.pending.length) {
-      const shop = $("#shop");
-      shop.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-    const w = L.words[L.wi];
-    const rest = L.words.find((x) => !x.solved);
-    if (rest) { if (w.solved) focusWord(rest); else focusCell(L.cells.get(L.cur)); }
-    checkLevelEnd();
+    if (game.pending.length) openShop(true);
+    else { hideModal(true); afterModal(); }
   }
+}
+
+/* devolve o foco ao tabuleiro e vê se o nível terminou */
+function afterModal() {
+  const L = game.L;
+  const w = L.words[L.wi];
+  const rest = L.words.find((x) => !x.solved);
+  if (rest) {
+    if (w.solved) focusWord(rest);
+    else { const c = L.cells.get(L.cur); if (c) focusCell(c); }
+  }
+  checkLevelEnd();
 }
 
 function useHint() {
@@ -588,10 +595,11 @@ async function runWordFlow(w, hasNext) {
   await clickOnce(m, "#next");
 
   game.pending.push({ tier, termo: w.termo });
+  updateShopBadge();
 }
 
 /* =========================================================
-   Loja
+   Loja: janela por cima do jogo (o tempo fica parado)
    ========================================================= */
 function bestSlotToUpgrade() {
   let best = SLOTS[0].id, low = 99;
@@ -599,14 +607,59 @@ function bestSlotToUpgrade() {
   return best;
 }
 
-function renderShop() {
-  const el = $("#shop");
-  const reward = game.pending[0];
-  el.classList.toggle("open", !!reward);
+function updateShopBadge() {
+  const n = game.pending.length;
+  ["#shopBadge", "#pcShopBadge"].forEach((sel) => { const b = $(sel); b.hidden = !n; b.textContent = n; });
+  ["#shopBtn", "#pcShopBtn"].forEach((sel) => $(sel).classList.toggle("glow", n > 0));
+}
 
-  const head = reward
-    ? `<div class="shop-head"><span class="chip ${TIERS[reward.tier].classe}">${MEDAL[reward.tier]} ${TIERS[reward.tier].nome}</span> Escolha uma peça (até ${TIERS[reward.tier].nome})${game.pending.length > 1 ? ` · +${game.pending.length - 1} na fila` : ""}</div>`
-    : `<div class="shop-head">🔒 Loja fechada. Acerte uma palavra e responda ao quiz para ganhar uma peça.</div>`;
+/* atualiza o selo da loja e, se a janela estiver aberta, o conteúdo dela */
+function renderShop() {
+  updateShopBadge();
+  if (game.shopOpen) renderShopModal();
+}
+
+function openShop(fresh = false) {
+  if (game.paused && !fresh) return; // outra janela já está aberta
+  game.shopOpen = true;
+  game.shopFresh = fresh;
+  game.shopBought = false;
+  game.shopMsg = "";
+  if (game.pending.length) game.shopSlot = bestSlotToUpgrade();
+  const m = showModal(`<div id="shopRoot"></div>`, "shop-modal");
+  m.addEventListener("click", shopClick);
+  renderShopModal();
+}
+
+function closeShop() {
+  if (!game.shopOpen) return;
+  game.shopOpen = false;
+  hideModal(game.shopFresh || game.shopBought); // acertou agora ou comprou: o relógio recomeça
+  afterModal();
+}
+
+function shopClick(e) {
+  const tab = e.target.closest("[data-slot]");
+  if (tab) { game.shopSlot = tab.dataset.slot; renderShopModal(); return; }
+  const buy = e.target.closest("[data-buy]");
+  if (buy) { buyPart(buy.dataset.buy); return; }
+  if (e.target.closest("#skipBtn")) { skipReward(); return; }
+  if (e.target.closest("#shopClose") || e.target.closest("#shopDone")) closeShop();
+}
+
+function renderShopModal() {
+  const root = $("#shopRoot");
+  if (!root) return;
+  const keepScroll = $(".shop-left", root) ? $(".shop-left", root).scrollTop : 0;
+  const reward = game.pending[0];
+  const score = computeScore();
+  const rank = rankFor(score);
+
+  const sub = game.shopMsg
+    ? `<span class="shop-msg">${game.shopMsg}</span>`
+    : reward
+      ? `<span class="chip ${TIERS[reward.tier].classe}">${MEDAL[reward.tier]} ${TIERS[reward.tier].nome}</span> Escolha uma peça (até ${TIERS[reward.tier].nome})${game.pending.length > 1 ? ` · +${game.pending.length - 1} na fila` : ""}`
+      : `🔒 Sem recompensa agora. Acerte uma palavra e responda ao quiz para ganhar uma peça. Você já pode olhar o catálogo.`;
 
   const tabs = SLOTS.map((s) => `<button class="tab t${tierOf(s.id)}${s.id === game.shopSlot ? " sel" : ""}" data-slot="${s.id}" type="button"><span class="ic">${s.icone}</span>${s.nome}</button>`).join("");
 
@@ -615,7 +668,7 @@ function renderShop() {
   const cards = PARTS.filter((p) => p.slot === game.shopSlot).map((p) => {
     const net = p.price - refund;
     let note = "", label = "Comprar", disabled = true, bad = false;
-    if (!reward) { note = "Loja fechada."; label = "Fechada"; }
+    if (!reward) { note = "Loja só para olhar por enquanto."; label = "Fechada"; }
     else if (cur && cur.id === p.id) { note = "Instalada no seu PC."; label = "Instalada"; }
     else if (cur && cur.tier >= p.tier) { note = "Você já tem uma peça melhor ou igual."; label = "—"; }
     else if (p.tier > reward.tier) { note = `🔒 Exige resposta mais rápida (peça ${TIERS[p.tier].nome}).`; label = "Bloqueada"; }
@@ -631,10 +684,28 @@ function renderShop() {
     </div>`;
   }).join("");
 
-  el.innerHTML = `<h3>Loja de peças</h3>${head}
-    <div class="shop-tabs">${tabs}</div>
-    <div class="parts">${cards}</div>
-    ${reward ? `<button class="btn ghost small skip" id="skipBtn" type="button">Não comprar agora (guardar o dinheiro)</button>` : ""}`;
+  root.innerHTML = `
+    <div class="shop-top">
+      <div class="shop-title">
+        <div class="modal-tag q">Loja de peças</div>
+        <div class="shop-sub">${sub}</div>
+      </div>
+      <div class="shop-wallet"><span>Saldo</span><strong>${fmt(game.money)}</strong></div>
+      <button class="icon-btn" id="shopClose" type="button" aria-label="Fechar a loja">✕</button>
+    </div>
+    <div class="shop-body">
+      <div class="shop-left">
+        <div class="shop-tabs">${tabs}</div>
+        <div class="parts">${cards}</div>
+      </div>
+      <div class="shop-right">
+        <div class="shop-pc">${pcSvg(game.installed, game.justInstalled)}</div>
+        <div class="shop-rank"><b>${rank.emoji} ${rank.nome}</b><span>${score} pts</span></div>
+        ${reward ? `<button class="btn ghost small" id="skipBtn" type="button">Guardar o dinheiro (pular esta peça)</button>` : ""}
+        <button class="btn primary" id="shopDone" data-autofocus type="button">${game.pending.length ? "Escolher depois" : "Voltar ao jogo"}</button>
+      </div>
+    </div>`;
+  $(".shop-left", root).scrollTop = keepScroll;
 }
 
 function buyPart(id) {
@@ -647,24 +718,21 @@ function buyPart(id) {
   game.money -= net;
   game.installed[p.slot] = p.id;
   game.pending.shift();
-  game.L.lastMark = performance.now();
+  game.shopBought = true;
   game.justInstalled = p.slot;
   game.shopSlot = bestSlotToUpgrade();
+  game.shopMsg = `✅ Instalado: ${p.nome}`;
   updateWallet();
   renderPC();
-  game.justInstalled = null;
   renderShop();
-  toast(`Instalado: ${p.nome}`);
-  checkLevelEnd();
+  game.justInstalled = null;
 }
 
 function skipReward() {
   if (!game.pending.length) return;
   game.pending.shift();
-  game.L.lastMark = performance.now();
+  game.shopMsg = "Recompensa guardada. O dinheiro continua com você.";
   renderShop();
-  toast("Recompensa guardada. O dinheiro continua com você.");
-  checkLevelEnd();
 }
 
 /* =========================================================
@@ -682,9 +750,11 @@ function showLevelIntro() {
       ${def.penalidade ? `<li>⚠️ <span>Palavra errada no Conferir: <b>−${fmt(def.penalidade)}</b></span></li>` : `<li>🟢 <span>Neste nível, errar no Conferir não custa dinheiro</span></li>`}
       <li>🔤 <span>${def.reveal === "first" ? "A primeira letra das palavras maiores já vem revelada" : "O tabuleiro começa vazio, sem letras de ajuda"}</span></li>
     </ul>`;
+  const splash = first ? `<div class="splash">${logoSvg("splash-logo")}<div class="splash-title"><span>TUX</span><b>FORGE</b></div><p class="splash-sub">monte seu pc, peça por peça</p></div>` : "";
   const welcome = first ? `
     <p>Acerte as palavras da cruzadinha, leia a descrição, responda ao quiz e <b>monte o seu PC</b>. Quanto mais rápido você acerta, melhores as peças que pode escolher. Mas o dinheiro é limitado!</p>` : "";
   const m = showModal(`
+    ${splash}
     <div class="modal-tag q">Nível ${def.id} de ${LEVELS.length}</div>
     <h2>${def.nome} <span class="diff ${def.dificuldade}">${def.dificuldade}</span></h2>
     <p style="color:var(--muted)">${def.sub}</p>
@@ -783,13 +853,10 @@ function init() {
   $("#hintBtn").addEventListener("click", useHint);
   $("#resetBtn").addEventListener("click", askReset);
   $("#newGameBtn").addEventListener("click", askNewGame);
-  $("#shop").addEventListener("click", (e) => {
-    const tab = e.target.closest("[data-slot]");
-    if (tab) { game.shopSlot = tab.dataset.slot; renderShop(); return; }
-    const buy = e.target.closest("[data-buy]");
-    if (buy) { buyPart(buy.dataset.buy); return; }
-    if (e.target.closest("#skipBtn")) skipReward();
-  });
+  $("#brandLogo").innerHTML = logoSvg("brand-svg");
+  $("#shopBtn").addEventListener("click", () => openShop(false));
+  $("#pcShopBtn").addEventListener("click", () => openShop(false));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && game.shopOpen) closeShop(); });
   window.addEventListener("resize", updateCellSize);
   setInterval(tick, 250);
   startLevel(0);
