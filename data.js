@@ -341,7 +341,7 @@ const RANKS = [
 /* ---------- Desafio para pular de nível ----------
    Perguntas muito difíceis: a primeira alternativa é a certa (o jogo embaralha).
    Quem erra espera SKIP.espera segundos e a pergunta errada não volta. */
-const SKIP = { espera: 60 };
+const SKIP = { espera: 60, premio: 0.3 }; // premio: fração do valor Prata de cada palavra que faltava
 
 const HARD_QUESTIONS = [
   {
